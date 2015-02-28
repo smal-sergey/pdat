@@ -15,6 +15,7 @@ public class SimpleController
         ModelAndView model = new ModelAndView();
         model.addObject("title", "Spring Security title");
         model.addObject("body", "Hello, Spring!");
+        model.addObject("author", "smal");
         model.setViewName("index");
         return model;
     }
