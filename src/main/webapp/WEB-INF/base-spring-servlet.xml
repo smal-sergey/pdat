@@ -6,9 +6,7 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:component-scan base-package="com.smalser.*">
-        <context:exclude-filter type="regex" expression="com\.smalser\.pdat\.localserver\..*" />
-    </context:component-scan>
+    <context:component-scan base-package="com.smalser.*"/>
 
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
