@@ -10,16 +10,23 @@
 
   <properties>
     <jdk.version>1.8</jdk.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jetty.version>9.0.5.v20130815</jetty.version>
-    <jackson.version>1.9.13</jackson.version>
     <junit.version>4.11</junit.version>
     <spring.version>4.1.5.RELEASE</spring.version>
     <spring.security.version>3.2.5.RELEASE</spring.security.version>
     <jstl.version>1.2</jstl.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <derby.version>10.11.1.1</derby.version>
   </properties>
 
   <dependencies>
+
+    <!--Derby database-->
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+      <version>${derby.version}</version>
+    </dependency>
 
     <!-- jstl for jsp page -->
     <dependency>
