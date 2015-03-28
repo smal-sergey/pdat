@@ -3,6 +3,7 @@ package com.smalser.pdat.core.calculator;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
 import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
+import org.apache.commons.math3.analysis.solvers.AbstractUnivariateSolver;
 import org.apache.commons.math3.analysis.solvers.BisectionSolver;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 
@@ -32,7 +33,8 @@ public class BetaFinder
     public double findMinBeta()
     {
         double maxBeta = estimates.stream().map(e -> e.b2).max(Double::compareTo).get();
-        BisectionSolver bisectionSolver = new BisectionSolver(precision);
+        AbstractUnivariateSolver bisectionSolver = new BisectionSolver(precision);
+//        AbstractUnivariateSolver bisectionSolver = new BrentSolver(precision);
         return bisectionSolver.solve(100, this::integrateDensity, alpha + 0.01, maxBeta, maxBeta);
     }
 
