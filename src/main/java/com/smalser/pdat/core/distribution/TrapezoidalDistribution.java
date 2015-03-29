@@ -14,7 +14,7 @@ public class TrapezoidalDistribution extends AbstractRealDistribution
 
     public TrapezoidalDistribution(double a, double b, double c, double d)
     {
-        super(new TrapezoidalRandomGenerator(a, b, c, d));
+        super(new StubRandomGenerator());
         this.a = a;
         this.b = b;
         this.c = c;

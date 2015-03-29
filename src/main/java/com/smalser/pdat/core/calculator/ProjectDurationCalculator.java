@@ -1,5 +1,6 @@
 package com.smalser.pdat.core.calculator;
 
+import com.smalser.pdat.core.distribution.MixedRealDistribution;
 import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.Result;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
@@ -19,6 +20,7 @@ import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ProjectDurationCalculator
 {
@@ -94,13 +96,6 @@ public class ProjectDurationCalculator
 
     private AbstractRealDistribution createDistribution(Set<TaskInitialEstimate> estimates)
     {
-        if (estimates.size() != 1)
-        {
-            throw new IllegalStateException("Case not implemented yet");
-        }
-
-        TaskInitialEstimate estimate = estimates.stream().findAny().get();
-        return estimate.getDistribution();
+        return new MixedRealDistribution(estimates.stream().map(TaskInitialEstimate::getDistribution).collect(Collectors.toList()));
     }
-
 }
