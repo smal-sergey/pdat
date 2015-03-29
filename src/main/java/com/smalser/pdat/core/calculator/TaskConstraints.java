@@ -25,12 +25,12 @@ public class TaskConstraints
 
     private double findLeftBound(Set<TaskInitialEstimate> estimates)
     {
-        return estimates.stream().map(e -> e.a1).min(Double::compareTo).get();
+        return estimates.stream().map(TaskInitialEstimate::min).min(Double::compareTo).get();
     }
 
     private double findRightBound(Set<TaskInitialEstimate> estimates)
     {
-        return estimates.stream().map(e -> e.b2).max(Double::compareTo).get();
+        return estimates.stream().map(TaskInitialEstimate::max).max(Double::compareTo).get();
     }
 
     public Double getCalculatedMaxTime()

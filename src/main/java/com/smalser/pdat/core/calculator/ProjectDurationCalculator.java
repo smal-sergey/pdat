@@ -5,7 +5,6 @@ import com.smalser.pdat.core.structure.Result;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
-import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.events.EventHandler;
@@ -44,7 +43,8 @@ public class ProjectDurationCalculator
         //todo create all tasks result duration integration phase
 
         //now just return first task duration
-        return taskToDuration.get("task1");
+        String task = taskToDuration.keySet().stream().findAny().get();
+        return taskToDuration.get(task);
     }
 
     private Result calculateTask(Set<TaskInitialEstimate> estimates, double gamma)
@@ -52,7 +52,7 @@ public class ProjectDurationCalculator
         AbstractRealDistribution distribution = createDistribution(estimates);
         TaskConstraints taskConstraints = new TaskConstraints(estimates, gamma, 0.1); //todo adaptive speed constant?
 
-        double beta = findBeta(estimates,taskConstraints);
+        double beta = findBeta(estimates, taskConstraints);
 
         LeftBorder leftBorder = new LeftBorder(taskConstraints);
         RightBorderODE rightBorderODE = new RightBorderODE(distribution, leftBorder);
@@ -68,8 +68,8 @@ public class ProjectDurationCalculator
         UnivariateFunction rightBorder = new RightBorder(continuousModel);
 
         //d(t) = b(t) - a(t)   possible duration interval, dates from and to. We need to minimize that interval
-        UnivariateObjectiveFunction durationInterval = new UnivariateObjectiveFunction(
-                (t) -> rightBorder.value(t) - leftBorder.value(t));
+        UnivariateObjectiveFunction durationInterval = new UnivariateObjectiveFunction((
+                t) -> rightBorder.value(t) - leftBorder.value(t));
         SearchInterval searchInterval = new SearchInterval(0, taskConstraints.getCalculatedMaxTime()); //todo think about initial t value
         BrentOptimizer optimizer = new BrentOptimizer(1.0e-6, 1.0e-6);
         UnivariatePointValuePair optimum = optimizer.optimize(searchInterval, durationInterval, GoalType.MINIMIZE, new MaxEval(100));
@@ -94,8 +94,13 @@ public class ProjectDurationCalculator
 
     private AbstractRealDistribution createDistribution(Set<TaskInitialEstimate> estimates)
     {
-        //todo create real mixed distribution
-        return new UniformRealDistribution(0, 10);
+        if (estimates.size() != 1)
+        {
+            throw new IllegalStateException("Case not implemented yet");
+        }
+
+        TaskInitialEstimate estimate = estimates.stream().findAny().get();
+        return estimate.getDistribution();
     }
 
 }
