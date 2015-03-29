@@ -4,27 +4,30 @@ import org.apache.commons.math3.ode.events.EventHandler;
 
 public class IntegratorStopper implements EventHandler
 {
-    private final LeftBorder leftBorder;
+    private final TaskConstraints taskConstraints;
 
-    public IntegratorStopper(LeftBorder leftBorder)
+    public IntegratorStopper(TaskConstraints taskConstraints)
     {
-        this.leftBorder = leftBorder;
+        this.taskConstraints = taskConstraints;
     }
 
     @Override
     public void init(double t0, double[] y0, double t)
     {
+//        System.out.println("init " + taskConstraints.rightBound);
     }
 
     @Override
     public double g(double t, double[] y)
     {
-        return leftBorder.maxLeftBorderValue - leftBorder.value(t);
+//        System.out.println(t + "\t" + y[0] + "\t" + (taskConstraints.rightBound - y[0]));
+        return taskConstraints.rightBound - y[0];
     }
 
     @Override
     public Action eventOccurred(double t, double[] y, boolean increasing)
     {
+        taskConstraints.setCalculatedMaxTime(t);
         return Action.STOP;
     }
 

@@ -8,30 +8,21 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
  * */
 public class LeftBorder implements UnivariateFunction
 {
-    public final double alpha;
-    public final double maxLeftBorderValue;
-    private final double leftBorderSpeed;
+    public final TaskConstraints taskConstraints;
 
-    public LeftBorder(double alpha, double leftBorderSpeed, double maxLeftBorderValue)
+    public LeftBorder(TaskConstraints taskConstraints)
     {
-        this.alpha = alpha;
-        this.leftBorderSpeed = leftBorderSpeed;
-        this.maxLeftBorderValue = maxLeftBorderValue;
+        this.taskConstraints = taskConstraints;
     }
 
     @Override
     public double value(double t)
     {
-        return alpha + leftBorderSpeed * t;
+        return taskConstraints.alpha + taskConstraints.leftBorderSpeed * t;
     }
 
     public double speed()
     {
-        return leftBorderSpeed;
-    }
-
-    public double maxTime()
-    {
-        return (maxLeftBorderValue - alpha) / speed();
+        return taskConstraints.leftBorderSpeed;
     }
 }

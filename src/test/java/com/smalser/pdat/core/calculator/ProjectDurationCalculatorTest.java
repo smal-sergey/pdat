@@ -1,6 +1,5 @@
 package com.smalser.pdat.core.calculator;
 
-import com.google.common.collect.Sets;
 import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.Result;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
@@ -9,7 +8,7 @@ import org.junit.Test;
 
 import static com.smalser.pdat.core.structure.TaskInitialEstimate.uniform;
 import static org.hamcrest.Matchers.closeTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class ProjectDurationCalculatorTest
 {
@@ -29,7 +28,6 @@ public class ProjectDurationCalculatorTest
         Result result = calc.calculate(gamma);
 
         //todo create Result matcher
-        assertThat(result.a, closeTo(8.5, 0.01));
-        assertThat(result.b, closeTo(10, 0.01));
+        assertThat(result.b - result.a, closeTo(8.5, 0.01));
     }
 }
