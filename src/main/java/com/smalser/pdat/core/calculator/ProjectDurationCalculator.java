@@ -1,10 +1,13 @@
 package com.smalser.pdat.core.calculator;
 
+import com.google.common.base.Preconditions;
 import com.smalser.pdat.core.distribution.MixedRealDistribution;
 import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.Result;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
+import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
@@ -55,6 +58,7 @@ public class ProjectDurationCalculator
         TaskConstraints taskConstraints = new TaskConstraints(estimates, gamma, 0.1); //todo adaptive speed constant?
 
         double beta = findBeta(estimates, taskConstraints);
+        System.out.println("Beta found! " + beta);
 
         LeftBorder leftBorder = new LeftBorder(taskConstraints);
         RightBorderODE rightBorderODE = new RightBorderODE(distribution, leftBorder);
@@ -62,12 +66,17 @@ public class ProjectDurationCalculator
 
         EventHandler integratorStopper = new IntegratorStopper(taskConstraints);
 
-        FirstOrderIntegrator dp853 = new DormandPrince853Integrator(1.0e-4, 1, 1.0e-6, 1.0e-6);
+//        FirstOrderIntegrator dp853 = new DormandPrince853Integrator(1.0e-4, 1, 1.0e-6, 1.0e-6);
+        FirstOrderIntegrator dp853 = new DormandPrince853Integrator(1.0e-3, 1, 1.0e-5, 1.0e-5);
         dp853.addStepHandler(continuousModel);
-        dp853.addEventHandler(integratorStopper, 0.1, 1.0e-6, 100);
+        dp853.addEventHandler(integratorStopper, 0.1, 1.0e-5, 30);
         dp853.integrate(rightBorderODE, 0.0, new double[]{beta}, 100 /*very big time*/, new double[]{beta});
 
         UnivariateFunction rightBorder = new RightBorder(continuousModel);
+
+        check(leftBorder, rightBorder, distribution, gamma);
+
+        System.out.println("Right border b(t) found!");
 
         //d(t) = b(t) - a(t)   possible duration interval, dates from and to. We need to minimize that interval
         UnivariateObjectiveFunction durationInterval = new UnivariateObjectiveFunction((
@@ -85,7 +94,19 @@ public class ProjectDurationCalculator
 //        System.out.println(rightBorder.toString());
 
         //todo Result must depend on t to draw plots
-        return new Result(a, b);
+        return new Result(leftBorder, rightBorder, t, taskConstraints, distribution);
+    }
+
+    //todo temp correctness check
+    private void check(UnivariateFunction leftBorder, UnivariateFunction rightBorder,
+                       AbstractRealDistribution distribution, double gamma)
+    {
+        UnivariateIntegrator integrator = new TrapezoidIntegrator(0.001, 0.001, 1, 50);
+        double a = leftBorder.value(0);
+        double b = rightBorder.value(10);
+        double integratedValue = integrator.integrate(100, distribution::density, a, b);
+        Preconditions.checkState(Math.abs(integratedValue - gamma) < 0.01,
+                "Integral in bounds [" + a + ", " + b + "] = " + integratedValue + " != " + gamma);
     }
 
     private double findBeta(Set<TaskInitialEstimate> estimates, TaskConstraints taskConstraints)
