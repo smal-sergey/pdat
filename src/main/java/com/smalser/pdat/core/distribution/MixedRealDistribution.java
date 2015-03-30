@@ -28,7 +28,11 @@ public class MixedRealDistribution extends AbstractRealDistribution
     @Override
     public double cumulativeProbability(double x)
     {
-        throw new IllegalStateException("Not implemented");
+        if(components.size() != 1)
+        {
+            throw new IllegalStateException("Not implemented");
+        }
+        return components.stream().findAny().get().cumulativeProbability(x);
     }
 
     @Override

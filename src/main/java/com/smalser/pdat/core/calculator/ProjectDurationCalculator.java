@@ -66,14 +66,16 @@ public class ProjectDurationCalculator
 
         EventHandler integratorStopper = new IntegratorStopper(taskConstraints);
 
-//        FirstOrderIntegrator dp853 = new DormandPrince853Integrator(1.0e-4, 1, 1.0e-6, 1.0e-6);
-        FirstOrderIntegrator dp853 = new DormandPrince853Integrator(1.0e-3, 1, 1.0e-5, 1.0e-5);
+        FirstOrderIntegrator dp853 = new DormandPrince853Integrator(1.0e-5, 1, 1.0e-5, 1.0e-5);
         dp853.addStepHandler(continuousModel);
         dp853.addEventHandler(integratorStopper, 0.1, 1.0e-5, 30);
-        dp853.integrate(rightBorderODE, 0.0, new double[]{beta}, 100 /*very big time*/, new double[]{beta});
+        dp853.integrate(rightBorderODE, 1, new double[]{beta}, 100 /*very big time*/, new double[]{beta});
 
         UnivariateFunction rightBorder = new RightBorder(continuousModel);
 
+        System.out.println("!!!!!");
+        taskConstraints.dumpBorders(leftBorder, rightBorder);
+        System.out.println("!!!!!");
         check(leftBorder, rightBorder, distribution, gamma);
 
         System.out.println("Right border b(t) found!");
@@ -93,7 +95,6 @@ public class ProjectDurationCalculator
         System.out.println("a = " + a + "\nb = " + b + "\nt = " + t);
 //        System.out.println(rightBorder.toString());
 
-        //todo Result must depend on t to draw plots
         return new Result(leftBorder, rightBorder, t, taskConstraints, distribution);
     }
 
@@ -101,12 +102,15 @@ public class ProjectDurationCalculator
     private void check(UnivariateFunction leftBorder, UnivariateFunction rightBorder,
                        AbstractRealDistribution distribution, double gamma)
     {
-        UnivariateIntegrator integrator = new TrapezoidIntegrator(0.001, 0.001, 1, 50);
-        double a = leftBorder.value(0);
-        double b = rightBorder.value(10);
-        double integratedValue = integrator.integrate(100, distribution::density, a, b);
+        double a = leftBorder.value(4);
+        double b = rightBorder.value(4);
+        double integratedValue = distribution.probability(a, b);
+
+        System.out.println("b - a = " + (b - a));
         Preconditions.checkState(Math.abs(integratedValue - gamma) < 0.01,
                 "Integral in bounds [" + a + ", " + b + "] = " + integratedValue + " != " + gamma);
+
+        System.out.println("OK! Integral in bounds [" + a + ", " + b + "] = " + integratedValue);
     }
 
     private double findBeta(Set<TaskInitialEstimate> estimates, TaskConstraints taskConstraints)

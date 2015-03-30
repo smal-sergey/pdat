@@ -1,6 +1,7 @@
 package com.smalser.pdat.core.calculator;
 
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
+import org.apache.commons.math3.analysis.UnivariateFunction;
 
 import java.util.Set;
 
@@ -31,6 +32,20 @@ public class TaskConstraints
     private double findRightBound(Set<TaskInitialEstimate> estimates)
     {
         return estimates.stream().map(TaskInitialEstimate::max).max(Double::compareTo).get();
+    }
+
+    public void dumpBorders(UnivariateFunction leftBorder, UnivariateFunction rightBorder)
+    {
+        double t = -1;
+        double left;
+        double right;
+        do
+        {
+            t += 1;
+            left = leftBorder.value(t);
+            right = rightBorder.value(t);
+            System.out.println(String.format("%f\t%f\t%f", t, left, right));
+        } while (right <= rightBound);
     }
 
     public Double getCalculatedMaxTime()

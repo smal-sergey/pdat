@@ -17,11 +17,12 @@ public class ProjectDurationCalculatorTest
     public void testCalculate() throws Exception
     {
         int upperBound = 10;
-        double gamma = 0.85;
+        double gamma = 0.5;
 //        TaskInitialEstimate task = uniform("task1", 0, upperBound);
-//        TaskInitialEstimate task = triangular("task1", 0, 5, 10);
         TaskInitialEstimate task = normal("task1", 5, 1);
-        TaskInitialEstimate task2 = normal("task1", 8, 1);
+//        TaskInitialEstimate task2 = normal("task1", 8, 1);
+
+//        TaskInitialEstimate task = triangular("task1", 0, 5, 10);
 //        TaskInitialEstimate task = trapezoidal("task1", 0, 2, 6, 8);
 
         ProjectInitialEstimates initialData = new ProjectInitialEstimates();
@@ -29,8 +30,8 @@ public class ProjectDurationCalculatorTest
         UserInitialEstimate userEstimate = new UserInitialEstimate(1);
         userEstimate.addEstimate(task);
 
-        UserInitialEstimate user2Estimate = new UserInitialEstimate(2);
-        user2Estimate.addEstimate(task2);
+//        UserInitialEstimate user2Estimate = new UserInitialEstimate(2);
+//        user2Estimate.addEstimate(task2);
 
         initialData.addUserEstimates(userEstimate);
 //        initialData.addUserEstimates(user2Estimate);
