@@ -84,7 +84,7 @@ public class Result
         createValues(getB(), sheet, 4, NUM_OF_COLUMNS_2);
 
         Drawing drawing = sheet.createDrawingPatriarch();
-        ClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5, 10, 15);
+        ClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 5, 10, 15, 20);
 
         Chart chart = drawing.createChart(anchor);
         ChartLegend legend = chart.getOrCreateLegend();

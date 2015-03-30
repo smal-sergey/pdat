@@ -22,17 +22,13 @@ public class MixedRealDistribution extends AbstractRealDistribution
     @Override
     public double density(double x)
     {
-        return components.stream().mapToDouble(d -> (d.density(x) / weight)).sum();
+        return components.stream().mapToDouble(d -> (d.density(x) * weight)).sum();
     }
 
     @Override
     public double cumulativeProbability(double x)
     {
-        if(components.size() != 1)
-        {
-            throw new IllegalStateException("Not implemented");
-        }
-        return components.stream().findAny().get().cumulativeProbability(x);
+        return components.stream().mapToDouble(c -> c.cumulativeProbability(x) * weight).sum();
     }
 
     @Override

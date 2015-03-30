@@ -9,9 +9,9 @@ import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
  * a(t) == left border value
  * C == leftBorderSpeed
  *
- *               f(b(t))
- * b'(t) = C * ----------
  *               f(a(t))
+ * b'(t) = C * ----------
+ *               f(b(t))
  * */
 public class RightBorderODE implements FirstOrderDifferentialEquations
 {
@@ -36,7 +36,7 @@ public class RightBorderODE implements FirstOrderDifferentialEquations
                                    double[] yDot) throws MaxCountExceededException, DimensionMismatchException
     {
         double leftValue = leftBorder.value(t);
-        yDot[0] = leftBorder.speed() * f(y[0]) / f(leftValue);  //todo here is a problem! leftValue can be 0!
+        yDot[0] = leftBorder.speed() * f(leftValue) / f(y[0]);
     }
 
     private double f(double t)

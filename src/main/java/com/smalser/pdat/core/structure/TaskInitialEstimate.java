@@ -59,7 +59,7 @@ public class TaskInitialEstimate
         //todo
         //six sigma rule
 //        return new TaskInitialEstimate(taskId, mean - 3 * deviation, mean, mean, mean + 3 * deviation, Type.NORMAL, new NormalDistribution(mean, deviation));
-        return new TaskInitialEstimate(taskId, mean - 5 * deviation, mean, mean, mean + 5 * deviation, Type.NORMAL, new NormalDistribution(mean, deviation));
+        return new TaskInitialEstimate(taskId, mean - 4 * deviation, mean, mean, mean + 4 * deviation, Type.NORMAL, new NormalDistribution(mean, deviation));
     }
 
     public AbstractRealDistribution getDistribution()

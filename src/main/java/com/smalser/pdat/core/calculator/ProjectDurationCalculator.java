@@ -6,13 +6,11 @@ import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.Result;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
-import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.events.EventHandler;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.ode.nonstiff.AdamsBashforthIntegrator;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.univariate.BrentOptimizer;
@@ -66,10 +64,11 @@ public class ProjectDurationCalculator
 
         EventHandler integratorStopper = new IntegratorStopper(taskConstraints);
 
-        FirstOrderIntegrator dp853 = new DormandPrince853Integrator(1.0e-5, 1, 1.0e-5, 1.0e-5);
-        dp853.addStepHandler(continuousModel);
-        dp853.addEventHandler(integratorStopper, 0.1, 1.0e-5, 30);
-        dp853.integrate(rightBorderODE, 1, new double[]{beta}, 100 /*very big time*/, new double[]{beta});
+//        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-5, 1, 1.0e-5, 1.0e-5);
+        FirstOrderIntegrator integrator = new AdamsBashforthIntegrator(2, 1.0e-5, 1.0e-2, 1.0e-5, 1.0e-5);
+        integrator.addStepHandler(continuousModel);
+        integrator.addEventHandler(integratorStopper, 0.1, 1.0e-5, 30);
+        integrator.integrate(rightBorderODE, 0, new double[]{beta}, 100 /*very big time*/, new double[]{beta});
 
         UnivariateFunction rightBorder = new RightBorder(continuousModel);
 
@@ -107,8 +106,7 @@ public class ProjectDurationCalculator
         double integratedValue = distribution.probability(a, b);
 
         System.out.println("b - a = " + (b - a));
-        Preconditions.checkState(Math.abs(integratedValue - gamma) < 0.01,
-                "Integral in bounds [" + a + ", " + b + "] = " + integratedValue + " != " + gamma);
+        Preconditions.checkState(Math.abs(integratedValue - gamma) < 0.01, "Integral in bounds [" + a + ", " + b + "] = " + integratedValue + " != " + gamma);
 
         System.out.println("OK! Integral in bounds [" + a + ", " + b + "] = " + integratedValue);
     }
