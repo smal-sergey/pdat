@@ -37,15 +37,15 @@ public class TrapezoidalDistribution extends AbstractRealDistribution
         {
             return 0;
         }
-        else if (x < b)
+        else if (x <= b)
         {
             return (x - a) / (b - a) * h;
         }
-        else if (x < c)
+        else if (x <= c)
         {
             return h;
         }
-        else if (x < d)
+        else if (x <= d)
         {
             return (d - x) / (d - c) * h;
         }
@@ -60,21 +60,21 @@ public class TrapezoidalDistribution extends AbstractRealDistribution
     {
         double xh = density(x);
 
-        if (x < a)
+        if (x <= a)
         {
             return 0;
         }
-        else if (x < b)
+        else if (x <= b)
         {
             return (x - a) * xh / 2;
         }
-        else if (x < c)
+        else if (x <= c)
         {
             return (b - a) * h / 2 + (x - b) * h;
         }
-        else if (x < d)
+        else if (x <= d)
         {
-            return (b - a) * h / 2 + b * h + (h + xh) / 2 * (x - c);
+            return (b - a) * h / 2 + (c - b) * h + (h + xh) / 2 * (x - c);
         }
         else
         {

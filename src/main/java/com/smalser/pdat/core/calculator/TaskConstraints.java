@@ -45,7 +45,8 @@ public class TaskConstraints
             left = leftBorder.value(t);
             right = rightBorder.value(t);
             System.out.println(String.format("%f\t%f\t%f", t, left, right));
-        } while (right <= rightBound);
+
+        } while (left < rightBound);
     }
 
     public Double getCalculatedMaxTime()

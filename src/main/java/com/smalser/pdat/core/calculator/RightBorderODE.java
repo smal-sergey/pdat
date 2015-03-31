@@ -36,7 +36,14 @@ public class RightBorderODE implements FirstOrderDifferentialEquations
                                    double[] yDot) throws MaxCountExceededException, DimensionMismatchException
     {
         double leftValue = leftBorder.value(t);
-        yDot[0] = leftBorder.speed() * f(leftValue) / f(y[0]);
+        if(f(y[0]) == 0)
+        {
+            yDot[0] = 0;
+        }
+        else
+        {
+            yDot[0] = leftBorder.speed() * f(leftValue) / f(y[0]);
+        }
     }
 
     private double f(double t)

@@ -8,9 +8,8 @@ import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.events.EventHandler;
-import org.apache.commons.math3.ode.nonstiff.AdamsBashforthIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.univariate.BrentOptimizer;
@@ -65,7 +64,8 @@ public class ProjectDurationCalculator
         EventHandler integratorStopper = new IntegratorStopper(taskConstraints);
 
 //        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-5, 1, 1.0e-5, 1.0e-5);
-        FirstOrderIntegrator integrator = new AdamsBashforthIntegrator(2, 1.0e-5, 1.0e-2, 1.0e-5, 1.0e-5);
+//        AdamsBashforthIntegrator integrator = new AdamsBashforthIntegrator(2, 1.0e-5, 1.0e-2, 1.0e-5, 1.0e-5);   //integrated normal distribution
+        DormandPrince54Integrator integrator = new DormandPrince54Integrator(1.0e-5, 1.0e-1, 1.0e-4, 1.0e-4);
         integrator.addStepHandler(continuousModel);
         integrator.addEventHandler(integratorStopper, 0.1, 1.0e-5, 30);
         integrator.integrate(rightBorderODE, 0, new double[]{beta}, 100 /*very big time*/, new double[]{beta});
@@ -101,8 +101,8 @@ public class ProjectDurationCalculator
     private void check(UnivariateFunction leftBorder, UnivariateFunction rightBorder,
                        AbstractRealDistribution distribution, double gamma)
     {
-        double a = leftBorder.value(4);
-        double b = rightBorder.value(4);
+        double a = leftBorder.value(0);
+        double b = rightBorder.value(0);
         double integratedValue = distribution.probability(a, b);
 
         System.out.println("b - a = " + (b - a));
