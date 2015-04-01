@@ -35,14 +35,17 @@ public class RightBorderODE implements FirstOrderDifferentialEquations
     public void computeDerivatives(double t, double[] y,
                                    double[] yDot) throws MaxCountExceededException, DimensionMismatchException
     {
-        double leftValue = leftBorder.value(t);
-        if(f(y[0]) == 0)
+        double a = leftBorder.value(t);
+        double b = y[0];
+
+        //todo create constant
+        if(f(b) < 1.0e-5)
         {
             yDot[0] = 0;
         }
         else
         {
-            yDot[0] = leftBorder.speed() * f(leftValue) / f(y[0]);
+            yDot[0] = leftBorder.speed() * f(a) / f(b);
         }
     }
 

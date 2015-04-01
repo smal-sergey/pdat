@@ -33,7 +33,7 @@ public class TrapezoidalDistribution extends AbstractRealDistribution
     @Override
     public double density(double x)
     {
-        if (x < a)
+        if (x <= a)
         {
             return 0;
         }

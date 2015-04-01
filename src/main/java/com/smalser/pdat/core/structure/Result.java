@@ -138,4 +138,9 @@ public class Result
             cell.setCellValue(density(point) / columnsNumber * colIndex);
         }
     }
+
+    public double getProbabilityOfInterval()
+    {
+        return distribution.probability(getA(), getB());
+    }
 }

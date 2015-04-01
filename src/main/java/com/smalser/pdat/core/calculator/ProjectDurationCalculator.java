@@ -1,6 +1,7 @@
 package com.smalser.pdat.core.calculator;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.smalser.pdat.core.distribution.MixedRealDistribution;
 import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.Result;
@@ -39,7 +40,18 @@ public class ProjectDurationCalculator
         for (String taskId : taskToEstimates.keySet())
         {
             Set<TaskInitialEstimate> estimates = taskToEstimates.get(taskId);
-            taskToDuration.put(taskId, calculateTask(estimates, gamma));
+
+            try
+            {
+                taskToDuration.put(taskId, calculateTask(estimates, gamma));
+            } catch (Exception e)
+            {
+                //todo refactor it
+                TaskConstraints taskConstraints = new TaskConstraints(estimates, gamma, 0.1); //todo adaptive speed constant?
+                AbstractRealDistribution distribution = createDistribution(estimates);
+                new Result((t) -> 0, (t) -> 0, 0, taskConstraints, distribution).dumpToXls("Error.xlsx");
+                Throwables.propagate(e);
+            }
         }
 
         //todo create all tasks result duration integration phase
@@ -72,10 +84,10 @@ public class ProjectDurationCalculator
 
         UnivariateFunction rightBorder = new RightBorder(continuousModel);
 
-        System.out.println("!!!!!");
-        taskConstraints.dumpBorders(leftBorder, rightBorder);
-        System.out.println("!!!!!");
-        check(leftBorder, rightBorder, distribution, gamma);
+//        System.out.println("!!!!!");
+//        taskConstraints.dumpBorders(leftBorder, rightBorder);
+//        System.out.println("!!!!!");
+//        check(leftBorder, rightBorder, distribution, gamma);
 
         System.out.println("Right border b(t) found!");
 
@@ -87,11 +99,10 @@ public class ProjectDurationCalculator
         UnivariatePointValuePair optimum = optimizer.optimize(searchInterval, durationInterval, GoalType.MINIMIZE, new MaxEval(100));
         double t = optimum.getPoint();
 
-        double a = leftBorder.value(t);
-        double b = rightBorder.value(t);
-
-        System.out.println("alpha = " + taskConstraints.alpha);
-        System.out.println("a = " + a + "\nb = " + b + "\nt = " + t);
+//        double a = leftBorder.value(t);
+//        double b = rightBorder.value(t);
+//        System.out.println("alpha = " + taskConstraints.alpha);
+//        System.out.println("a = " + a + "\nb = " + b + "\nt = " + t);
 //        System.out.println(rightBorder.toString());
 
         return new Result(leftBorder, rightBorder, t, taskConstraints, distribution);

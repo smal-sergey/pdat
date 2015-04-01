@@ -4,6 +4,9 @@ import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.Result;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import com.smalser.pdat.core.structure.UserInitialEstimate;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
@@ -16,7 +19,6 @@ import java.util.List;
 import static com.smalser.pdat.core.structure.TaskInitialEstimate.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.IsCloseTo.closeTo;
-import static org.junit.Assume.assumeTrue;
 
 @RunWith(Theories.class)
 public class ProjectDurationCalculatorTest
@@ -56,25 +58,21 @@ public class ProjectDurationCalculatorTest
     }
 
     @Theory
-    public void test_calculate(UserInitialEstimate[] estimates) throws Exception
+    public void test_calculate(UserInitialEstimate estimate1, UserInitialEstimate estimate2,
+                               UserInitialEstimate estimate3) throws Exception
     {
-        assumeTrue(estimates.length > 0);
-
         double gamma = 0.8;
         ProjectInitialEstimates initialData = new ProjectInitialEstimates();
+        initialData.addUserEstimates(estimate1);
+        initialData.addUserEstimates(estimate2);
+        initialData.addUserEstimates(estimate3);
 
-        for (UserInitialEstimate estimate : estimates)
-        {
-            initialData.addUserEstimates(estimate);
-        }
+//        initialData.getTaskEstimates().get("task1").stream().forEach(System.out::println);
 
         ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
         Result result = calc.calculate(gamma);
 
-        //todo complete test
-        assertThat(result.getB() - result.getA(), closeTo(gamma, 0.01));
-
-//        result.dumpToXls("results.xlsx");
+        assertThat(result, withIntervalProbability(closeTo(gamma, 0.01)));
     }
 
     @Test
@@ -108,5 +106,47 @@ public class ProjectDurationCalculatorTest
 //        assertThat(result.getB() - result.getA(), closeTo(8.5, 0.01));
 
         result.dumpToXls("results.xlsx");
+    }
+
+    @Test
+    @Ignore
+    public void for_resolve_problem() throws Exception
+    {
+        double gamma = 0.8;
+        String taskId = "task1";
+
+        ProjectInitialEstimates initialData = new ProjectInitialEstimates();
+        initialData.addUserEstimates(estimate(1, trapezoidal(taskId, 7, 7, 8, 9)));
+        initialData.addUserEstimates(estimate(2, trapezoidal(taskId, 7, 7, 8, 9)));
+        initialData.addUserEstimates(estimate(3, trapezoidal(taskId, 7, 7, 8, 9)));
+
+        ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
+        Result result = calc.calculate(gamma);
+
+        result.dumpToXls("results.xlsx");
+    }
+
+    private Matcher<? super Result> withIntervalProbability(Matcher<? super Double> gammaMatcher)
+    {
+        return new TypeSafeDiagnosingMatcher<Result>()
+        {
+            private Result item;
+
+            @Override
+            protected boolean matchesSafely(Result item, org.hamcrest.Description mismatchDescription)
+            {
+                this.item = item;
+                double probabilityOfInterval = item.getProbabilityOfInterval();
+                mismatchDescription.appendText("Result with interval probability").appendValue(probabilityOfInterval);
+                return gammaMatcher.matches(probabilityOfInterval);
+            }
+
+            @Override
+            public void describeTo(org.hamcrest.Description description)
+            {
+                item.dumpToXls("test_fail.xlsx");
+                gammaMatcher.describeTo(description);
+            }
+        };
     }
 }
