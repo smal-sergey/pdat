@@ -12,10 +12,11 @@ import java.io.FileOutputStream;
 
 public class Result
 {
-    private final UnivariateFunction leftBorder;
-    private final UnivariateFunction rightBorder;
-    private final double optimalTime;
-    private final TaskConstraints taskConstraints;
+    public final UnivariateFunction leftBorder;
+    public final UnivariateFunction rightBorder;
+    public final TaskConstraints taskConstraints;
+    public final double optimalTime;
+
     private final AbstractRealDistribution distribution;
 
     public Result(UnivariateFunction leftBorder, UnivariateFunction rightBorder, double optimalTime,
@@ -53,7 +54,7 @@ public class Result
         return distribution.density(x);
     }
 
-    public void dumpToXls(String fileName)
+    public void dumpToXls(String fileName, boolean isLine)
     {
         Workbook wb = new XSSFWorkbook();
         Sheet sheet = wb.createSheet("result");
@@ -61,7 +62,7 @@ public class Result
         double rightBound = getRightBound();
         double leftBound = getLeftBound();
 
-        final double STEP = 0.1;
+        final double STEP = 0.01;
         final int NUM_OF_COLUMNS = (int) ((rightBound - leftBound) / STEP) + 1;
 
         Row timeRow = sheet.createRow(0);
@@ -90,8 +91,8 @@ public class Result
         ChartLegend legend = chart.getOrCreateLegend();
         legend.setPosition(LegendPosition.TOP_RIGHT);
 
-        ScatterChartData data = chart.getChartDataFactory().createScatterChartData();
-//        LineChartData data = chart.getChartDataFactory().createLineChartData();
+        ScatterChartData chartData = chart.getChartDataFactory().createScatterChartData();
+        LineChartData lineData = chart.getChartDataFactory().createLineChartData();
 
         ValueAxis bottomAxis = chart.getChartAxisFactory().createValueAxis(AxisPosition.BOTTOM);
         ValueAxis leftAxis = chart.getChartAxisFactory().createValueAxis(AxisPosition.LEFT);
@@ -106,14 +107,18 @@ public class Result
         ChartDataSource<Number> bxs = DataSources.fromNumericCellRange(sheet, new CellRangeAddress(4, 4, 0, NUM_OF_COLUMNS_2 - 1));
         ChartDataSource<Number> bys = DataSources.fromNumericCellRange(sheet, new CellRangeAddress(5, 5, 0, NUM_OF_COLUMNS_2 - 1));
 
-//        data.addSeries(xs, ys1);
-//        data.addSeries(axs, ays);
-//        data.addSeries(bxs, bys);
-        data.addSerie(xs, ys1);
-        data.addSerie(axs, ays);
-        data.addSerie(bxs, bys);
+        if (isLine)
+        {
+            lineData.addSeries(xs, ys1);
+        }
+        else
+        {
+            chartData.addSerie(xs, ys1);
+            chartData.addSerie(axs, ays);
+            chartData.addSerie(bxs, bys);
+        }
 
-        chart.plot(data, bottomAxis, leftAxis);
+        chart.plot(isLine ? lineData : chartData, bottomAxis, leftAxis);
 
         try (FileOutputStream fileOut = new FileOutputStream(fileName))
         {

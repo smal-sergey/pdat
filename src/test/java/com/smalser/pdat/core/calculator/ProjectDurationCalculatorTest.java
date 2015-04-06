@@ -4,9 +4,9 @@ import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.Result;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import com.smalser.pdat.core.structure.UserInitialEstimate;
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
@@ -67,63 +67,74 @@ public class ProjectDurationCalculatorTest
         initialData.addUserEstimates(estimate2);
         initialData.addUserEstimates(estimate3);
 
-//        initialData.getTaskEstimates().get("task1").stream().forEach(System.out::println);
+        initialData.getTaskEstimates().get("task1").stream().forEach(System.out::println);
 
         ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
         Result result = calc.calculate(gamma);
 
         assertThat(result, withIntervalProbability(closeTo(gamma, 0.01)));
+        assertThat(result, hasMinSpread());
     }
 
     @Test
-    public void testCalculate() throws Exception
-    {
-        int upperBound = 10;
-        double gamma = 0.8;
-//        TaskInitialEstimate task = uniform("task1", 0, upperBound);
-        TaskInitialEstimate task = normal("task1", 5, 1);
-        TaskInitialEstimate task2 = uniform("task1", 3, 7);
-//        TaskInitialEstimate task2 = normal("task1", 8, 1);
-
-//        TaskInitialEstimate task = triangular("task1", 0, 5, 10);
-//        TaskInitialEstimate task = trapezoidal("task1", 0, 2, 6, 8);
-
-        ProjectInitialEstimates initialData = new ProjectInitialEstimates();
-
-        UserInitialEstimate userEstimate = new UserInitialEstimate(1);
-        userEstimate.addEstimate(task);
-
-        UserInitialEstimate user2Estimate = new UserInitialEstimate(2);
-        user2Estimate.addEstimate(task2);
-
-        initialData.addUserEstimates(userEstimate);
-        initialData.addUserEstimates(user2Estimate);
-
-        ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
-        Result result = calc.calculate(gamma);
-
-        //todo create Result matcher
-//        assertThat(result.getB() - result.getA(), closeTo(8.5, 0.01));
-
-        result.dumpToXls("results.xlsx");
-    }
-
-    @Test
-    @Ignore
     public void for_resolve_problem() throws Exception
     {
-        double gamma = 0.8;
+        double gamma = 0.95;
         String taskId = "task1";
 
         ProjectInitialEstimates initialData = new ProjectInitialEstimates();
-        initialData.addUserEstimates(estimate(1, trapezoidal(taskId, 7, 7, 8, 9)));
-        initialData.addUserEstimates(estimate(2, trapezoidal(taskId, 7, 7, 8, 9)));
-        initialData.addUserEstimates(estimate(3, trapezoidal(taskId, 7, 7, 8, 9)));
+        initialData.addUserEstimates(estimate(1, normal(taskId, 5, 1)));
+        initialData.addUserEstimates(estimate(2, trapezoidal(taskId, 3, 5, 6, 7)));
+        initialData.addUserEstimates(estimate(3, uniform(taskId, 4, 6)));
 
         ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
         Result result = calc.calculate(gamma);
 
-        result.dumpToXls("results.xlsx");
+        result.dumpToXls("results.xlsx", false);
+    }
+
+
+    private Matcher<? super Result> hasMinSpread()
+    {
+        return new TypeSafeDiagnosingMatcher<Result>()
+        {
+            private Result item;
+
+            @Override
+            protected boolean matchesSafely(Result item, Description mismatchDescription)
+            {
+                this.item = item;
+                Double maxTime = item.taskConstraints.getCalculatedMaxTime();
+                Double calculatedSpread = item.getB() - item.getA();
+
+                for (double t = 0.0; t < maxTime; t += 0.1)
+                {
+                    double b = item.rightBorder.value(t);
+                    double a = item.leftBorder.value(t);
+
+                    if (calculatedSpread - (b - a) > 0.1)
+                    {
+                        mismatchDescription.appendText("Found interval shorter then calculated one. t = ").appendValue(t)
+                                .appendText(", a = ").appendValue(a).appendText(", b = ").appendValue(b)
+                                .appendText("\n\t (b - a) = ").appendValue(b - a);
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            @Override
+            public void describeTo(Description description)
+            {
+                item.dumpToXls("test_fail.xlsx", false);
+                double a = item.getA();
+                double b = item.getB();
+                description.appendText("Result with interval [").appendValue(a).appendText(", ").appendValue(b)
+                        .appendText("] on t = ").appendValue(item.optimalTime).appendText(" is optimal.")
+                        .appendText("Max time = ").appendValue(item.taskConstraints.getCalculatedMaxTime()).appendText("\n\t (b - a) = ").appendValue(b - a);
+            }
+        };
     }
 
     private Matcher<? super Result> withIntervalProbability(Matcher<? super Double> gammaMatcher)
@@ -137,14 +148,14 @@ public class ProjectDurationCalculatorTest
             {
                 this.item = item;
                 double probabilityOfInterval = item.getProbabilityOfInterval();
-                mismatchDescription.appendText("Result with interval probability").appendValue(probabilityOfInterval);
+                mismatchDescription.appendText("Result with interval probability ").appendValue(probabilityOfInterval);
                 return gammaMatcher.matches(probabilityOfInterval);
             }
 
             @Override
             public void describeTo(org.hamcrest.Description description)
             {
-                item.dumpToXls("test_fail.xlsx");
+                item.dumpToXls("test_fail.xlsx", false);
                 gammaMatcher.describeTo(description);
             }
         };

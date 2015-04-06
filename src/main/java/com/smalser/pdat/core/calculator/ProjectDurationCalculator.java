@@ -49,7 +49,7 @@ public class ProjectDurationCalculator
                 //todo refactor it
                 TaskConstraints taskConstraints = new TaskConstraints(estimates, gamma, 0.1); //todo adaptive speed constant?
                 AbstractRealDistribution distribution = createDistribution(estimates);
-                new Result((t) -> 0, (t) -> 0, 0, taskConstraints, distribution).dumpToXls("Error.xlsx");
+                new Result((t) -> 0, (t) -> 0, 0, taskConstraints, distribution).dumpToXls("Error.xlsx", false);
                 Throwables.propagate(e);
             }
         }
@@ -79,7 +79,7 @@ public class ProjectDurationCalculator
 //        AdamsBashforthIntegrator integrator = new AdamsBashforthIntegrator(2, 1.0e-5, 1.0e-2, 1.0e-5, 1.0e-5);   //integrated normal distribution
         DormandPrince54Integrator integrator = new DormandPrince54Integrator(1.0e-5, 1.0e-1, 1.0e-4, 1.0e-4);
         integrator.addStepHandler(continuousModel);
-        integrator.addEventHandler(integratorStopper, 0.1, 1.0e-5, 30);
+        integrator.addEventHandler(integratorStopper, 0.1, 1.0e-5, 50);
         integrator.integrate(rightBorderODE, 0, new double[]{beta}, 100 /*very big time*/, new double[]{beta});
 
         UnivariateFunction rightBorder = new RightBorder(continuousModel);
