@@ -1,5 +1,6 @@
 package com.smalser.pdat.core.calculator;
 
+import com.smalser.pdat.core.XlsLogger;
 import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.Result;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
@@ -15,6 +16,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.smalser.pdat.core.structure.TaskInitialEstimate.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -67,10 +69,11 @@ public class ProjectDurationCalculatorTest
         initialData.addUserEstimates(estimate2);
         initialData.addUserEstimates(estimate3);
 
-        initialData.getTaskEstimates().get("task1").stream().forEach(System.out::println);
+//        initialData.getTaskEstimates().get("task1").stream().forEach(System.out::println);
 
         ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
-        Result result = calc.calculate(gamma);
+        Map<String, Result> taskToDuration = calc.calculateEachTask(gamma);
+        Result result = taskToDuration.values().stream().findFirst().get();
 
         assertThat(result, withIntervalProbability(closeTo(gamma, 0.01)));
         assertThat(result, hasMinSpread());
@@ -88,9 +91,10 @@ public class ProjectDurationCalculatorTest
         initialData.addUserEstimates(estimate(3, uniform(taskId, 4, 6)));
 
         ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
-        Result result = calc.calculate(gamma);
+        Map<String, Result> taskToDuration = calc.calculateEachTask(gamma);
+        Result result = taskToDuration.values().stream().findFirst().get();
 
-        result.dumpToXls("results.xlsx", false);
+        XlsLogger.dumpResult("results.xlsx", result);
     }
 
 
@@ -114,9 +118,7 @@ public class ProjectDurationCalculatorTest
 
                     if (calculatedSpread - (b - a) > 0.1)
                     {
-                        mismatchDescription.appendText("Found interval shorter then calculated one. t = ").appendValue(t)
-                                .appendText(", a = ").appendValue(a).appendText(", b = ").appendValue(b)
-                                .appendText("\n\t (b - a) = ").appendValue(b - a);
+                        mismatchDescription.appendText("Found interval shorter then calculated one. t = ").appendValue(t).appendText(", a = ").appendValue(a).appendText(", b = ").appendValue(b).appendText("\n\t (b - a) = ").appendValue(b - a);
                         return false;
                     }
                 }
@@ -127,12 +129,10 @@ public class ProjectDurationCalculatorTest
             @Override
             public void describeTo(Description description)
             {
-                item.dumpToXls("test_fail.xlsx", false);
+                XlsLogger.dumpResult("test_fail.xlsx", item);
                 double a = item.getA();
                 double b = item.getB();
-                description.appendText("Result with interval [").appendValue(a).appendText(", ").appendValue(b)
-                        .appendText("] on t = ").appendValue(item.optimalTime).appendText(" is optimal.")
-                        .appendText("Max time = ").appendValue(item.taskConstraints.getCalculatedMaxTime()).appendText("\n\t (b - a) = ").appendValue(b - a);
+                description.appendText("Result with interval [").appendValue(a).appendText(", ").appendValue(b).appendText("] on t = ").appendValue(item.optimalTime).appendText(" is optimal.").appendText("Max time = ").appendValue(item.taskConstraints.getCalculatedMaxTime()).appendText("\n\t (b - a) = ").appendValue(b - a);
             }
         };
     }
@@ -155,7 +155,7 @@ public class ProjectDurationCalculatorTest
             @Override
             public void describeTo(org.hamcrest.Description description)
             {
-                item.dumpToXls("test_fail.xlsx", false);
+                XlsLogger.dumpResult("test_fail.xlsx", item);
                 gammaMatcher.describeTo(description);
             }
         };

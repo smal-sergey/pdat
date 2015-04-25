@@ -2,12 +2,15 @@ package com.smalser.pdat.core.calculator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.smalser.pdat.core.XlsLogger;
 import com.smalser.pdat.core.distribution.MixedRealDistribution;
 import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.Result;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.solvers.BrentSolver;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.events.EventHandler;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
@@ -19,6 +22,7 @@ import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
 import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +36,7 @@ public class ProjectDurationCalculator
         this.initialData = initialData;
     }
 
-    public Result calculate(double gamma)
+    public Map<String, Result> calculateEachTask(double gamma)
     {
         Map<String, Set<TaskInitialEstimate>> taskToEstimates = initialData.getTaskEstimates();
         Map<String, Result> taskToDuration = new HashMap<>();
@@ -40,37 +44,45 @@ public class ProjectDurationCalculator
         for (String taskId : taskToEstimates.keySet())
         {
             Set<TaskInitialEstimate> estimates = taskToEstimates.get(taskId);
+            MixedRealDistribution taskDistribution = createDistribution(estimates);
 
             try
             {
-                taskToDuration.put(taskId, calculateTask(estimates, gamma));
+                taskToDuration.put(taskId, calculateTask(estimates, taskDistribution, gamma));
+
             } catch (Exception e)
             {
-                //todo refactor it
-                TaskConstraints taskConstraints = new TaskConstraints(estimates, gamma, 0.1); //todo adaptive speed constant?
-                AbstractRealDistribution distribution = createDistribution(estimates);
-                new Result((t) -> 0, (t) -> 0, 0, taskConstraints, distribution).dumpToXls("Error.xlsx", false);
+                XlsLogger.dumpToXls("Error.xls", taskDistribution::density, taskDistribution.minBound, taskDistribution.maxBound);
                 Throwables.propagate(e);
             }
         }
 
-        //todo create all tasks result duration integration phase
-
-        //now just return first task duration
-        String task = taskToDuration.keySet().stream().findAny().get();
-        return taskToDuration.get(task);
+        return taskToDuration;
     }
 
-    private Result calculateTask(Set<TaskInitialEstimate> estimates, double gamma)
+    public AggregatedResult aggregate(Set<Result> tasks, double gamma)
     {
-        AbstractRealDistribution distribution = createDistribution(estimates);
+        double M0 = tasks.stream().mapToDouble(result -> result.distribution.getNumericalMean()).sum();
+        double sumVariance = tasks.stream().mapToDouble(result -> result.distribution.getNumericalVariance()).sum();
+        double D0 = Math.sqrt(sumVariance);
+
+        AbstractRealDistribution sumDistrib = new NormalDistribution(M0, D0);
+        BrentSolver solver = new BrentSolver(1.0e-4);
+        double latestEstimate = solver.solve(Integer.MAX_VALUE, x -> sumDistrib.probability(M0, x) - gamma / 2, M0, M0 + 4 * D0);
+
+        return new AggregatedResult(sumDistrib, M0 - (latestEstimate - M0), latestEstimate);
+    }
+
+    private Result calculateTask(Set<TaskInitialEstimate> estimates, AbstractRealDistribution taskDistribution,
+                                 double gamma)
+    {
         TaskConstraints taskConstraints = new TaskConstraints(estimates, gamma, 0.1); //todo adaptive speed constant?
 
-        double beta = findBeta(estimates, taskConstraints);
+        double beta = findBeta(taskDistribution, taskConstraints);
         System.out.println("Beta found! " + beta);
 
         LeftBorder leftBorder = new LeftBorder(taskConstraints);
-        RightBorderODE rightBorderODE = new RightBorderODE(distribution, leftBorder);
+        RightBorderODE rightBorderODE = new RightBorderODE(taskDistribution, leftBorder);
         ContinuousOutputModel continuousModel = new ContinuousOutputModel();
 
         EventHandler integratorStopper = new IntegratorStopper(taskConstraints);
@@ -105,7 +117,7 @@ public class ProjectDurationCalculator
 //        System.out.println("a = " + a + "\nb = " + b + "\nt = " + t);
 //        System.out.println(rightBorder.toString());
 
-        return new Result(leftBorder, rightBorder, t, taskConstraints, distribution);
+        return new Result(leftBorder, rightBorder, t, taskConstraints, taskDistribution);
     }
 
     //todo temp correctness check
@@ -122,14 +134,17 @@ public class ProjectDurationCalculator
         System.out.println("OK! Integral in bounds [" + a + ", " + b + "] = " + integratedValue);
     }
 
-    private double findBeta(Set<TaskInitialEstimate> estimates, TaskConstraints taskConstraints)
+    private double findBeta(AbstractRealDistribution taskDistribution, TaskConstraints taskConstraints)
     {
-        BetaFinder betaFinder = new BetaFinder(createDistribution(estimates), taskConstraints);
+        BetaFinder betaFinder = new BetaFinder(taskDistribution, taskConstraints);
         return betaFinder.findMinBeta();
     }
 
-    private AbstractRealDistribution createDistribution(Set<TaskInitialEstimate> estimates)
+    private MixedRealDistribution createDistribution(Set<TaskInitialEstimate> estimates)
     {
-        return new MixedRealDistribution(estimates.stream().map(TaskInitialEstimate::getDistribution).collect(Collectors.toList()));
+        List<AbstractRealDistribution> components = estimates.stream().map(TaskInitialEstimate::getDistribution).collect(Collectors.toList());
+        double a = estimates.stream().mapToDouble(TaskInitialEstimate::min).min().getAsDouble();
+        double b = estimates.stream().mapToDouble(TaskInitialEstimate::max).max().getAsDouble();
+        return new MixedRealDistribution(components, a, b);
     }
 }

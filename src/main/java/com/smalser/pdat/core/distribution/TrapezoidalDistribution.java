@@ -85,7 +85,11 @@ public class TrapezoidalDistribution extends AbstractRealDistribution
     @Override
     public double getNumericalMean()
     {
-        throw new IllegalStateException("Not implemented");
+        double firstPart = h * (2 * b * b - a * b - a * a) / 6;
+        double secondPart = (c * c - b * b) * h / 2;
+        double thirdPart = h * (d * d + d * c - 2 * c * c) / 6;
+
+        return firstPart + secondPart + thirdPart;
     }
 
     @Override

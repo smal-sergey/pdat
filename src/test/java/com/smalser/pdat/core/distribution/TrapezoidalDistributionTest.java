@@ -1,6 +1,7 @@
 package com.smalser.pdat.core.distribution;
 
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -14,11 +15,6 @@ import static org.junit.Assume.assumeTrue;
 @RunWith(Theories.class)
 public class TrapezoidalDistributionTest
 {
-//    public static final Double A = 0.0;
-//    public static final Double B = 0.5;
-//    public static final Double C = 1.0;
-//    public static final Double D = 1.5;
-
     public static final Double A = 0.0;
     public static final Double B = 2.0;
     public static final Double C = 6.0;
@@ -42,7 +38,6 @@ public class TrapezoidalDistributionTest
         Double[] doubles = new Double[100];
 
         double d = -1.0;
-//        double step = 4.0 / 100;
         double step = 10.0 / 100;
 
         for (int i = 0; i < 100; i++, d += step)
@@ -50,6 +45,12 @@ public class TrapezoidalDistributionTest
             doubles[i] = d;
         }
         return doubles;
+    }
+
+    @Test
+    public void test_mean() throws Exception
+    {
+        assertThat(distribution.getNumericalMean(), closeTo(4, 0.001));
     }
 
     @Theory
@@ -69,7 +70,6 @@ public class TrapezoidalDistributionTest
     {
         assumeTrue(x0 >= B && x0 <= C);
 
-//        assertTrue(distribution.density(x0) == 1);
         assertThat(distribution.density(x0), closeTo(H, 0.001));
     }
 
