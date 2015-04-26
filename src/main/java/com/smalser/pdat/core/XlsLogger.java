@@ -1,5 +1,6 @@
 package com.smalser.pdat.core;
 
+import com.smalser.pdat.core.structure.AggregatedResult;
 import com.smalser.pdat.core.structure.Result;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.charts.*;
@@ -14,6 +15,11 @@ public class XlsLogger
     public static void dumpResult(String fileName, Result result)
     {
         dumpToXls2(fileName, result::density, result.getLeftBound(), result.getRightBound(), result.getA(), result.getB());
+    }
+
+    public static void dumpResult(String fileName, AggregatedResult result)
+    {
+        dumpToXls2(fileName, result.distribution::density, result.leftBound, result.rightBound, result.a, result.b);
     }
 
     public static void dumpToXls(String fileName, Function<Double, Double> density, double min, double max)
@@ -87,6 +93,8 @@ public class XlsLogger
 
             cell = valueRow.createCell((short) colIndex);
             cell.setCellValue(density.apply(x));
+
+//            System.out.println(x + "\t" + density.apply(x));
         }
 
 
@@ -105,7 +113,11 @@ public class XlsLogger
 
         ValueAxis bottomAxis = chart.getChartAxisFactory().createValueAxis(AxisPosition.BOTTOM);
         ValueAxis leftAxis = chart.getChartAxisFactory().createValueAxis(AxisPosition.LEFT);
+
         leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+        bottomAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+        bottomAxis.setMinimum(min - 5);
+        bottomAxis.setMaximum(max + 5);
 
         ChartDataSource<Number> xs = DataSources.fromNumericCellRange(sheet, new CellRangeAddress(0, 0, 0, NUM_OF_COLUMNS - 1));
         ChartDataSource<Number> ys1 = DataSources.fromNumericCellRange(sheet, new CellRangeAddress(1, 1, 0, NUM_OF_COLUMNS - 1));

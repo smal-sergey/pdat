@@ -19,10 +19,7 @@ import org.apache.commons.math3.optim.univariate.SearchInterval;
 import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
 import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ProjectDurationCalculator
@@ -58,7 +55,7 @@ public class ProjectDurationCalculator
         return taskToDuration;
     }
 
-    public AggregatedResult aggregate(Set<Result> tasks, double gamma)
+    public AggregatedResult aggregate(Collection<? extends Result> tasks, double gamma)
     {
         double M0 = tasks.stream().mapToDouble(result -> result.distribution.getNumericalMean()).sum();
         double sumVariance = tasks.stream().mapToDouble(result -> result.distribution.getNumericalVariance()).sum();
@@ -68,7 +65,7 @@ public class ProjectDurationCalculator
         BrentSolver solver = new BrentSolver(1.0e-4);
         double latestEstimate = solver.solve(Integer.MAX_VALUE, x -> sumDistrib.probability(M0, x) - gamma / 2, M0, M0 + 4 * D0);
 
-        return new AggregatedResult(sumDistrib, M0 - (latestEstimate - M0), latestEstimate);
+        return new AggregatedResult(sumDistrib, M0 - 5 * D0, M0 + 5 * D0,  M0 - (latestEstimate - M0), latestEstimate);
     }
 
     private Result calculateTask(Set<TaskInitialEstimate> estimates, AbstractRealDistribution taskDistribution,
@@ -77,7 +74,7 @@ public class ProjectDurationCalculator
         TaskConstraints taskConstraints = new TaskConstraints(estimates, gamma, 0.1); //todo adaptive speed constant?
 
         double beta = findBeta(taskDistribution, taskConstraints);
-        System.out.println("Beta found! " + beta);
+//        System.out.println("Beta found! " + beta);
 
         LeftBorder leftBorder = new LeftBorder(taskConstraints);
         RightBorderODE rightBorderODE = new RightBorderODE(taskDistribution, leftBorder);
@@ -99,7 +96,7 @@ public class ProjectDurationCalculator
 //        System.out.println("!!!!!");
 //        check(leftBorder, rightBorder, distribution, gamma);
 
-        System.out.println("Right border b(t) found!");
+//        System.out.println("Right border b(t) found!");
 
         //d(t) = b(t) - a(t)   possible duration interval, dates from and to. We need to minimize that interval
         UnivariateObjectiveFunction durationInterval = new UnivariateObjectiveFunction((

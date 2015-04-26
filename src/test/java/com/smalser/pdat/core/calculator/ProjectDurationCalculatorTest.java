@@ -1,10 +1,7 @@
 package com.smalser.pdat.core.calculator;
 
 import com.smalser.pdat.core.XlsLogger;
-import com.smalser.pdat.core.structure.ProjectInitialEstimates;
-import com.smalser.pdat.core.structure.Result;
-import com.smalser.pdat.core.structure.TaskInitialEstimate;
-import com.smalser.pdat.core.structure.UserInitialEstimate;
+import com.smalser.pdat.core.structure.*;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
@@ -54,7 +51,7 @@ public class ProjectDurationCalculatorTest
 
     private static UserInitialEstimate estimate(Integer id, TaskInitialEstimate est)
     {
-        UserInitialEstimate userEstimate = new UserInitialEstimate(1);
+        UserInitialEstimate userEstimate = new UserInitialEstimate(id);
         userEstimate.addEstimate(est);
         return userEstimate;
     }
@@ -77,6 +74,25 @@ public class ProjectDurationCalculatorTest
 
         assertThat(result, withIntervalProbability(closeTo(gamma, 0.01)));
         assertThat(result, hasMinSpread());
+    }
+
+    @Test
+    public void test_aggregate_same_distributions() throws Exception
+    {
+        double gamma = 0.8;
+        ProjectInitialEstimates initialData = new ProjectInitialEstimates();
+
+        for (int i = 0; i < 100; i++)
+        {
+            UserInitialEstimate estimate = estimate(i, uniform("task" + i, 3, 7));
+            initialData.addUserEstimates(estimate);
+        }
+
+        ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
+        Map<String, Result> idToEstimate = calc.calculateEachTask(gamma);
+        AggregatedResult result = calc.aggregate(idToEstimate.values(), gamma);
+
+        XlsLogger.dumpResult("results.xlsx", result);
     }
 
     @Test
