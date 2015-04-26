@@ -1,4 +1,4 @@
-package com.smalser.pdat.core.calculator;
+package com.smalser.pdat.core.structure;
 
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 

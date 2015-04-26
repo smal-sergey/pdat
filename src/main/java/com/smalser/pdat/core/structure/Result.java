@@ -1,6 +1,5 @@
 package com.smalser.pdat.core.structure;
 
-import com.smalser.pdat.core.calculator.TaskConstraints;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 

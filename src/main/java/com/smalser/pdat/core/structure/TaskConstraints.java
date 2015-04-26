@@ -1,6 +1,5 @@
-package com.smalser.pdat.core.calculator;
+package com.smalser.pdat.core.structure;
 
-import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
 import java.util.Set;

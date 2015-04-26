@@ -1,6 +1,7 @@
 package com.smalser.pdat.core.calculator;
 
 import com.google.common.collect.Sets;
+import com.smalser.pdat.core.structure.TaskConstraints;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.commons.math3.ode.events.EventHandler;
 import org.junit.Before;

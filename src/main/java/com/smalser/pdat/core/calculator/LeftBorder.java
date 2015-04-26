@@ -1,5 +1,6 @@
 package com.smalser.pdat.core.calculator;
 
+import com.smalser.pdat.core.structure.TaskConstraints;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 
 /**
