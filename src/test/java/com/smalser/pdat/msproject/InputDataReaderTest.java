@@ -1,6 +1,7 @@
 package com.smalser.pdat.msproject;
 
 import com.smalser.pdat.core.structure.ProjectInitialEstimates;
+import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -12,9 +13,11 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Set;
 
 import static com.smalser.pdat.msproject.InputDataReader.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.hasSize;
 
 public class InputDataReaderTest
@@ -23,15 +26,35 @@ public class InputDataReaderTest
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void test_read_single_task() throws Exception
+    public void test_read_tasks_count() throws Exception
     {
         String projectFile = new XlsProjectBuilder().newFile("temp_project.xls")
-                .addRow(1, "task1", false, 3, 0, 0, 0).create();
+                .addRow(1, "task1", false, 3, 0, 0, 0)
+                .addRow(2, "task2", false, 4, 0, 0, 0)
+                .create();
 
         InputDataReader idr = new InputDataReader();
         ProjectInitialEstimates pie = idr.read(projectFile);
 
-        assertThat(pie.getTaskEstimates().keySet(), hasSize(1));
+        assertThat(pie.getTaskEstimates().keySet(), hasSize(2));
+    }
+
+    @Test
+    public void test_read_durations() throws Exception
+    {
+        String taskId = "task1";
+        String projectFile = new XlsProjectBuilder().newFile("temp_project.xls")
+                .addRow(1, taskId, false, 3, 1, 2, 3)
+                .create();
+
+        InputDataReader idr = new InputDataReader();
+        ProjectInitialEstimates pie = idr.read(projectFile);
+        Set<TaskInitialEstimate> ties = pie.getTaskEstimates().get(taskId);
+        assertThat(ties, hasSize(1));
+
+        TaskInitialEstimate tie = ties.stream().findFirst().get();
+        assertThat(tie.min(), closeTo(1, 0.01));
+        assertThat(tie.max(), closeTo(3, 0.01));
     }
 
     private class XlsProjectBuilder

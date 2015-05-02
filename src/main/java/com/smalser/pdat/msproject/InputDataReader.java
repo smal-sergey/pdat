@@ -1,18 +1,14 @@
 package com.smalser.pdat.msproject;
 
 import com.google.common.collect.Sets;
+import com.smalser.pdat.core.excel.XlsReader;
+import com.smalser.pdat.core.excel.XlsReaderFactory;
 import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import com.smalser.pdat.core.structure.UserInitialEstimate;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,33 +35,21 @@ public class InputDataReader
 
             try
             {
-                HSSFWorkbook wb = new HSSFWorkbook(new FileInputStream(fileName));
-                HSSFSheet sheet = wb.getSheetAt(0);
-                Row row;
-                Cell cell;
-
-                Iterator<Row> rows = sheet.rowIterator();
+                XlsReader xls = XlsReaderFactory.create(fileName);
 
                 //read headers
-                row = rows.next();
-                Iterator<Cell> cells = row.cellIterator();
-
-                while (cells.hasNext())
+                for (int i = 0; i < xls.getNumberOfColumns(); i++)
                 {
-                    cell = cells.next();
-                    String value = cell.getStringCellValue();
+                    String value = xls.getValue(0, i);
                     if (headers.contains(value))
                     {
-                        idxToCol.put(cell.getColumnIndex(), value);
+                        idxToCol.put(i, value);
                     }
                 }
 
                 //read values
-                while (rows.hasNext())
+                for (int i = 1; i < xls.getNumberOfRows(); i++)
                 {
-                    row = rows.next();
-                    cells = row.cellIterator();
-
                     double taskId;
                     String taskName = null;
                     boolean isSummary = true;
@@ -74,28 +58,44 @@ public class InputDataReader
                     double duration2 = 0;
                     double duration3 = 0;
 
-                    while (cells.hasNext())
+                    for (int j = 0; j < xls.getNumberOfColumns(); j++)
                     {
-                        cell = cells.next();
-                        String value = cell.getCellType() == Cell.CELL_TYPE_NUMERIC ? "" + cell.getNumericCellValue() : cell.getStringCellValue();
-                        int idx = cell.getColumnIndex();
+                        String value = xls.getValue(i, j);
 
-                        if (idxToCol.containsKey(idx))
+                        if (idxToCol.containsKey(j))
                         {
-                            switch (idxToCol.get(idx)){
-                                case COL_ID: taskId = Double.valueOf(value); break;
-                                case COL_NAME: taskName = value; break;
-                                case COL_SUMMARY: isSummary = "Yes".equals(value); break;
-                                case COL_DURATION: duration = Double.valueOf(value.split(" ")[0]); break;
-                                case COL_DURATION_1: duration1 = Double.valueOf(value.split(" ")[0]); break;
-                                case COL_DURATION_2: duration2 = Double.valueOf(value.split(" ")[0]); break;
-                                case COL_DURATION_3: duration3 = Double.valueOf(value.split(" ")[0]); break;
-                                default: throw new RuntimeException("Column " + idxToCol.get(idx) + " is not supported yet");
+                            String colName = idxToCol.get(j);
+                            switch (colName)
+                            {
+                                case COL_ID:
+                                    taskId = Double.valueOf(value);
+                                    break;
+                                case COL_NAME:
+                                    taskName = value;
+                                    break;
+                                case COL_SUMMARY:
+                                    isSummary = "Yes".equals(value);
+                                    break;
+                                case COL_DURATION:
+                                    duration = Double.parseDouble(value.split(" ")[0].replace(",", "."));
+                                    break;
+                                case COL_DURATION_1:
+                                    duration1 = Double.parseDouble(value.split(" ")[0].replace(",", "."));
+                                    break;
+                                case COL_DURATION_2:
+                                    duration2 = Double.parseDouble(value.split(" ")[0].replace(",", "."));
+                                    break;
+                                case COL_DURATION_3:
+                                    duration3 = Double.parseDouble(value.split(" ")[0].replace(",", "."));
+                                    break;
+                                default:
+                                    throw new RuntimeException("Column " + colName + " is not supported yet");
                             }
                         }
                     }
 
-                    if(!isSummary){
+                    if (!isSummary && notEmptyEstimate(duration, duration1, duration2, duration3))
+                    {
                         uie.addEstimate(createEstimate(taskName, duration, duration1, duration2, duration3));
                     }
                 }
@@ -112,10 +112,16 @@ public class InputDataReader
         return pie;
     }
 
-    private TaskInitialEstimate createEstimate(String taskName, double duration, double duration1,
-                                               double duration2, double duration3)
+    private boolean notEmptyEstimate(double duration, double duration1, double duration2, double duration3)
     {
-        if(duration1 == 0.0 && duration2 == 0.0 && duration3 == 0.0){
+        return !(duration == 0.0 && duration1 == 0.0 && duration2 == 0.0 && duration3 == 0.0);
+    }
+
+    private TaskInitialEstimate createEstimate(String taskName, double duration, double duration1, double duration2,
+                                               double duration3)
+    {
+        if (duration1 == 0.0 && duration2 == 0.0 && duration3 == 0.0)
+        {
             duration1 = duration * 0.9;
             duration2 = duration;
             duration3 = duration * 1.2;

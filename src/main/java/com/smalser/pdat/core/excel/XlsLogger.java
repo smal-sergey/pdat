@@ -1,4 +1,4 @@
-package com.smalser.pdat.core;
+package com.smalser.pdat.core.excel;
 
 import com.smalser.pdat.core.structure.AggregatedResult;
 import com.smalser.pdat.core.structure.Result;
@@ -27,7 +27,7 @@ public class XlsLogger
         Workbook wb = new XSSFWorkbook();
         Sheet sheet = wb.createSheet("result");
 
-        final double STEP = 0.01;
+        final double STEP = 0.05;
         final int NUM_OF_COLUMNS = (int) ((max - min) / STEP) + 1;
 
         Row timeRow = sheet.createRow(0);
@@ -78,7 +78,7 @@ public class XlsLogger
         Workbook wb = new XSSFWorkbook();
         Sheet sheet = wb.createSheet("result");
 
-        final double STEP = 0.01;
+        final double STEP = 0.05;
         final int NUM_OF_COLUMNS = (int) ((max - min) / STEP) + 1;
 
         Row timeRow = sheet.createRow(0);

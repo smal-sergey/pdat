@@ -2,7 +2,7 @@ package com.smalser.pdat.core.calculator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.smalser.pdat.core.XlsLogger;
+import com.smalser.pdat.core.excel.XlsLogger;
 import com.smalser.pdat.core.distribution.MixedRealDistribution;
 import com.smalser.pdat.core.structure.*;
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -87,7 +87,7 @@ public class ProjectDurationCalculator
         DormandPrince54Integrator integrator = new DormandPrince54Integrator(1.0e-5, 1.0e-1, 1.0e-4, 1.0e-4);
         integrator.addStepHandler(continuousModel);
         integrator.addEventHandler(integratorStopper, 0.1, 1.0e-5, 50);
-        integrator.integrate(rightBorderODE, 0, new double[]{beta}, 100 /*very big time*/, new double[]{beta});
+        integrator.integrate(rightBorderODE, 0, new double[]{beta}, Double.MAX_VALUE /*very big time*/, new double[]{beta});
 
         UnivariateFunction rightBorder = new RightBorder(continuousModel);
 

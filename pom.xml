@@ -21,6 +21,7 @@
         <guava.version>18.0</guava.version>
         <apache.poi.version>3.12-beta1</apache.poi.version>
         <apache.commons-math3.version>3.4.1</apache.commons-math3.version>
+        <jxl.version>2.6.12</jxl.version>
     </properties>
 
     <dependencies>
@@ -29,6 +30,12 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.jexcelapi</groupId>
+            <artifactId>jxl</artifactId>
+            <version>${jxl.version}</version>
         </dependency>
 
         <!-- APACHE START -->
