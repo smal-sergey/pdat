@@ -6,17 +6,17 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class XlsReaderFactory
+public class XlsEditorFactory
 {
-    public static XlsReader create(String fileName) throws IOException
+    public static XlsEditor create(String fileName) throws IOException
     {
         try
         {
             new HSSFWorkbook(new FileInputStream(fileName));
-            return new NewXlsReader(fileName);
+            return new NewXlsEditor(fileName);
         } catch (OldExcelFormatException e)
         {
-            return new OldXlsReader(fileName);
+            return new OldXlsEditor(fileName);
         }
     }
 }

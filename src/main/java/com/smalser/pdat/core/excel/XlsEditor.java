@@ -1,8 +1,14 @@
 package com.smalser.pdat.core.excel;
 
-public interface XlsReader
+public interface XlsEditor
 {
     int getNumberOfRows();
+
     int getNumberOfColumns();
+
     String getValue(int row, int col);
+
+    void setValue(int row, int col, String value);
+
+    void flush();
 }

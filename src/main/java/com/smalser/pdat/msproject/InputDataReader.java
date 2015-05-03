@@ -1,31 +1,18 @@
 package com.smalser.pdat.msproject;
 
-import com.google.common.collect.Sets;
-import com.smalser.pdat.core.excel.XlsReader;
-import com.smalser.pdat.core.excel.XlsReaderFactory;
+import com.smalser.pdat.core.excel.XlsEditor;
+import com.smalser.pdat.core.excel.XlsEditorFactory;
 import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import com.smalser.pdat.core.structure.UserInitialEstimate;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-public class InputDataReader
+public class InputDataReader extends MetaDataContainer
 {
-    public static final String COL_ID = "ID";
-    public static final String COL_NAME = "Task_Name";
-    public static final String COL_SUMMARY = "Summary";
-    public static final String COL_DURATION = "Duration";
-    public static final String COL_DURATION_1 = "Duration1";    //pessimistic
-    public static final String COL_DURATION_2 = "Duration2";    //expected
-    public static final String COL_DURATION_3 = "Duration3";    //optimistic
-
     public ProjectInitialEstimates read(String... fileNames)
     {
-        Set<String> headers = Sets.newHashSet(COL_ID, COL_NAME, COL_SUMMARY, COL_DURATION, COL_DURATION_1, COL_DURATION_2, COL_DURATION_3);
-        Map<Integer, String> idxToCol = new HashMap<>();
         ProjectInitialEstimates pie = new ProjectInitialEstimates();
 
         int userId = 0;
@@ -35,17 +22,8 @@ public class InputDataReader
 
             try
             {
-                XlsReader xls = XlsReaderFactory.create(fileName);
-
-                //read headers
-                for (int i = 0; i < xls.getNumberOfColumns(); i++)
-                {
-                    String value = xls.getValue(0, i);
-                    if (headers.contains(value))
-                    {
-                        idxToCol.put(i, value);
-                    }
-                }
+                XlsEditor xls = XlsEditorFactory.create(fileName);
+                Map<Integer, String> idxToCol = readHeaders(xls);
 
                 //read values
                 for (int i = 1; i < xls.getNumberOfRows(); i++)
