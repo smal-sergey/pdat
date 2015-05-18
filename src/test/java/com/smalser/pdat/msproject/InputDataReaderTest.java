@@ -1,7 +1,5 @@
 package com.smalser.pdat.msproject;
 
-import com.smalser.pdat.core.structure.ProjectInitialEstimates;
-import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -25,36 +23,37 @@ public class InputDataReaderTest
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
+    //todo write more complex tests
+
     @Test
     public void test_read_tasks_count() throws Exception
     {
-        String projectFile = new XlsProjectBuilder().newFile("temp_project.xls")
-                .addRow(1, "task1", false, 3, 0, 0, 0)
-                .addRow(2, "task2", false, 4, 0, 0, 0)
-                .create();
+        String projectFile = new XlsProjectBuilder().newFile("temp_project.xls").addRow(1, "task1", false, 3, 0, 0, 0).addRow(2, "task2", false, 4, 0, 0, 0).addRow(3, "task3", false, 5, 0, 0, 0).create();
 
         InputDataReader idr = new InputDataReader();
-        ProjectInitialEstimates pie = idr.read(projectFile);
+        Set<ProjectTask> tasks = idr.read(projectFile);
 
-        assertThat(pie.getTaskEstimates().keySet(), hasSize(2));
+        assertThat(tasks, hasSize(3));
     }
 
     @Test
     public void test_read_durations() throws Exception
     {
-        String taskId = "task1";
-        String projectFile = new XlsProjectBuilder().newFile("temp_project.xls")
-                .addRow(1, taskId, false, 3, 1, 2, 3)
-                .create();
+        double taskId = 1;
+        String taskName = "task1";
+        String projectFile = new XlsProjectBuilder().newFile("temp_project.xls").addRow(taskId, taskName, false, 3, 1, 2, 3).create();
 
         InputDataReader idr = new InputDataReader();
-        ProjectInitialEstimates pie = idr.read(projectFile);
-        Set<TaskInitialEstimate> ties = pie.getTaskEstimates().get(taskId);
-        assertThat(ties, hasSize(1));
+        Set<ProjectTask> tasks = idr.read(projectFile);
 
-        TaskInitialEstimate tie = ties.stream().findFirst().get();
-        assertThat(tie.min(), closeTo(1, 0.01));
-        assertThat(tie.max(), closeTo(3, 0.01));
+        assertThat(tasks, hasSize(1));
+
+        ProjectTask task = tasks.stream().findFirst().get();
+        assertThat(task.taskId, closeTo(taskId, 0.01));
+        assertThat(task.duration, closeTo(3, 0.01));
+        assertThat(task.duration1, closeTo(1, 0.01));
+        assertThat(task.duration2, closeTo(2, 0.01));
+        assertThat(task.duration3, closeTo(3, 0.01));
     }
 
     private class XlsProjectBuilder
@@ -95,8 +94,9 @@ public class InputDataReaderTest
             return this;
         }
 
-        XlsProjectBuilder addRow(int id, String name, boolean isSummary, double duration,
-                                 double duration1, double duration2, double duration3){
+        XlsProjectBuilder addRow(double id, String name, boolean isSummary, double duration, double duration1,
+                                 double duration2, double duration3)
+        {
 
             HSSFRow row = sheet.createRow(curRow++);
 
@@ -118,7 +118,8 @@ public class InputDataReaderTest
             return projectFile.getAbsolutePath();
         }
 
-        private String stringify(double dur){
+        private String stringify(double dur)
+        {
             return dur == 1.0 ? dur + " day" : dur + " days";
         }
     }

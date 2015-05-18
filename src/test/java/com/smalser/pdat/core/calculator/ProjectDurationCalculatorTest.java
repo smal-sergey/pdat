@@ -51,7 +51,7 @@ public class ProjectDurationCalculatorTest
 
     private static UserInitialEstimate estimate(Integer id, TaskInitialEstimate est)
     {
-        UserInitialEstimate userEstimate = new UserInitialEstimate(id);
+        UserInitialEstimate userEstimate = new UserInitialEstimate(id.toString());
         userEstimate.addEstimate(est);
         return userEstimate;
     }

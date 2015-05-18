@@ -91,4 +91,10 @@ class NewXlsEditor implements XlsEditor
             Throwables.propagate(e);
         }
     }
+
+    @Override
+    public void close() throws Exception
+    {
+        wb.close();
+    }
 }

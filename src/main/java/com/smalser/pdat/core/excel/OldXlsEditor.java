@@ -67,10 +67,15 @@ class OldXlsEditor implements XlsEditor
         try
         {
             writableWorkbook.write();
-            writableWorkbook.close();
         } catch (Exception e)
         {
             Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public void close() throws Exception
+    {
+        writableWorkbook.close();
     }
 }

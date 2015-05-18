@@ -5,10 +5,10 @@ import java.util.TreeSet;
 
 public class UserInitialEstimate
 {
-    final int id;
+    final String id;
     private final TreeSet<TaskInitialEstimate> tasks = new TreeSet<>((o1, o2) -> o1.taskId.compareTo(o2.taskId));
 
-    public UserInitialEstimate(int id)
+    public UserInitialEstimate(String id)
     {
         this.id = id;
     }

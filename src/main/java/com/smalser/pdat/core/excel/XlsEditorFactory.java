@@ -16,6 +16,7 @@ public class XlsEditorFactory
             return new NewXlsEditor(fileName);
         } catch (OldExcelFormatException e)
         {
+            System.out.println("Fallback to old xls format read attempt");
             return new OldXlsEditor(fileName);
         }
     }

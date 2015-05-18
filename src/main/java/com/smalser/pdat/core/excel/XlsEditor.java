@@ -1,6 +1,6 @@
 package com.smalser.pdat.core.excel;
 
-public interface XlsEditor
+public interface XlsEditor extends AutoCloseable
 {
     int getNumberOfRows();
 

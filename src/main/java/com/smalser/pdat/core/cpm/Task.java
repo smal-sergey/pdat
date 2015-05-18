@@ -8,7 +8,7 @@ public class Task
 {
     public final String id;
     public final double cost;
-    public final Set<? extends Task> dependencies;
+    public final Set<Task> dependencies;
 
     // the cost of the task along the critical path
     public double criticalCost;
@@ -32,11 +32,6 @@ public class Task
         this.earlyFinish = -1;
     }
 
-    public boolean isDependent(Task t)
-    {
-        return dependencies.contains(t) || dependencies.stream().anyMatch(depend -> depend.isDependent(t));
-    }
-
     public void setLatest(double maxCost)
     {
         latestStart = maxCost - criticalCost;
@@ -46,12 +41,6 @@ public class Task
     public boolean isCritical()
     {
         return earlyStart == latestStart;
-    }
-
-    public String[] toStringArray()
-    {
-        String criticalCond = isCritical() ? "Yes" : "No";
-        return new String[]{name, earlyStart + "", earlyFinish + "", latestStart + "", latestFinish + "", latestStart - earlyStart + "", criticalCond};
     }
 
     @Override

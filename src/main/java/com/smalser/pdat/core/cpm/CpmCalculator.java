@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 public class CpmCalculator
 {
     public double maxCost;
-    public String format = "%1$-10s %2$-5s %3$-5s %4$-5s %5$-5s %6$-5s %7$-10s\n";
 
     public List<Task> criticalPath(Set<Task> tasks)
     {
@@ -90,10 +89,7 @@ public class CpmCalculator
         Set<Task> remaining = new HashSet<>(tasks);
         for (Task t : tasks)
         {
-            for (Task td : t.dependencies)
-            {
-                remaining.remove(td);
-            }
+            t.dependencies.forEach(remaining::remove);
         }
 
         System.out.print("Initial nodes: ");
@@ -114,10 +110,10 @@ public class CpmCalculator
 
     public void print(Task[] tasks)
     {
-        System.out.format(format, "Task", "ES", "EF", "LS", "LF", "Slack", "Critical?");
+        System.out.println("Task\tCost");
         for (Task t : tasks)
         {
-            System.out.format(format, (Object[]) t.toStringArray());
+            System.out.format("%s\t%.2f\n", t.id, t.cost);
         }
     }
 }
