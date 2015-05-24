@@ -6,6 +6,7 @@ import com.smalser.pdat.core.structure.ProjectInitialEstimates;
 import com.smalser.pdat.core.structure.UserInitialEstimate;
 import com.smalser.pdat.msproject.ProjectTask;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ public class TasksConverter
         for (ProjectTask projectTask : uniqueProjectTasks)
         {
             String taskId = projectTask.taskId + "";
-            idToTask.put(taskId, new Task(taskId, idToCost.apply(taskId)));
+            idToTask.put(taskId, new Task(taskId, new BigDecimal(idToCost.apply(taskId))));
         }
 
         for (ProjectTask projectTask : uniqueProjectTasks)

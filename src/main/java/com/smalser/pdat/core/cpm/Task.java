@@ -2,45 +2,60 @@ package com.smalser.pdat.core.cpm;
 
 import com.google.common.collect.Sets;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 public class Task
 {
     public final String id;
-    public final double cost;
+    public final BigDecimal cost;
     public final Set<Task> dependencies;
 
     // the cost of the task along the critical path
-    public double criticalCost;
+    public BigDecimal criticalCost;
     // a name for the task for printing
     public String name;
     // the earliest start
-    public double earlyStart;
+    public BigDecimal earlyStart;
     // the earliest finish
-    public double earlyFinish;
+    public BigDecimal earlyFinish;
     // the latest start
-    public double latestStart;
+    public BigDecimal latestStart;
     // the latest finish
-    public double latestFinish;
+    public BigDecimal latestFinish;
 
-    public Task(String id, double cost, Task... dependencies)
+    public Task(String id, BigDecimal cost, Task... dependencies)
     {
         this.id = id;
         this.name = id;
         this.cost = cost;
         this.dependencies = Sets.newHashSet(dependencies);
-        this.earlyFinish = -1;
+        this.earlyStart = BigDecimal.ZERO;
+        this.earlyFinish = new BigDecimal(-1);
+        this.latestStart = BigDecimal.ZERO;
+        this.latestFinish = BigDecimal.ZERO;
     }
 
-    public void setLatest(double maxCost)
+    public Task(String id, int cost, Task... dependencies)
     {
-        latestStart = maxCost - criticalCost;
-        latestFinish = latestStart + cost;
+        this(id, BigDecimal.valueOf(cost), dependencies);
+    }
+
+    public void setLatest(BigDecimal maxCost)
+    {
+        latestStart = maxCost.subtract(criticalCost);
+        latestFinish = latestStart.add(cost);
     }
 
     public boolean isCritical()
     {
-        return earlyStart == latestStart;
+        return earlyStart.compareTo(latestStart) == 0;
+    }
+
+    public String[] toStringArray()
+    {
+        String criticalCond = isCritical() ? "Yes" : "No";
+        return new String[]{name, earlyStart + "", earlyFinish + "", latestStart + "", latestFinish + "", latestStart.subtract(earlyStart) + "", criticalCond};
     }
 
     @Override
