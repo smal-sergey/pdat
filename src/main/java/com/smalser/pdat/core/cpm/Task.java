@@ -1,13 +1,13 @@
 package com.smalser.pdat.core.cpm;
 
 import com.google.common.collect.Sets;
+import com.smalser.pdat.AbstractTask;
 
 import java.math.BigDecimal;
 import java.util.Set;
 
-public class Task
+public class Task extends AbstractTask
 {
-    public final String id;
     public final BigDecimal cost;
     public final Set<Task> dependencies;
 
@@ -26,7 +26,7 @@ public class Task
 
     public Task(String id, BigDecimal cost, Task... dependencies)
     {
-        this.id = id;
+        super(id);
         this.name = id;
         this.cost = cost;
         this.dependencies = Sets.newHashSet(dependencies);

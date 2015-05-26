@@ -1,19 +1,20 @@
 package com.smalser.pdat.msproject;
 
 import com.google.common.collect.Sets;
+import com.smalser.pdat.AbstractTask;
 import com.smalser.pdat.core.structure.TaskInitialEstimate;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class ProjectTask
+public class ProjectTask extends AbstractTask
 {
     private Pattern dependencyPattern = Pattern.compile("(\\d+)([SF][SF])?([+-]\\d+ \\w+)?");
 
     public final String expertId;
-    public final double taskId;
     public final String taskName;
     public final Set<Double> dependencies;
     public final boolean isSummary;
@@ -25,8 +26,8 @@ public class ProjectTask
     public ProjectTask(String expertId, double taskId, String taskName, String dependencies, boolean isSummary,
                        double duration, double duration1, double duration2, double duration3)
     {
+        super(taskId + "");
         this.expertId = expertId;
-        this.taskId = taskId;
         this.taskName = taskName;
         this.dependencies = parse(dependencies);
         this.isSummary = isSummary;
@@ -69,7 +70,12 @@ public class ProjectTask
             c = duration * 1.2;
         }
 //        return TaskInitialEstimate.triangular(taskName, a, b, c);
-        return TaskInitialEstimate.triangular(taskId + "", a, b, c);
+        return TaskInitialEstimate.triangular(id, a, b, c);
+    }
+
+    public Collection<String> getDependencies()
+    {
+        return dependencies.stream().map(dep -> dep + "").collect(Collectors.toList());
     }
 }
 

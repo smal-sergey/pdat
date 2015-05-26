@@ -1,5 +1,6 @@
 package com.smalser.pdat.core.structure;
 
+import com.smalser.pdat.AbstractTask;
 import com.smalser.pdat.core.distribution.TrapezoidalDistribution;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -8,7 +9,7 @@ import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class TaskInitialEstimate
+public class TaskInitialEstimate extends AbstractTask
 {
     private final String description;
     private final double a1;
@@ -17,13 +18,12 @@ public class TaskInitialEstimate
     private final double b2;
     private final AbstractRealDistribution distribution;
 
-    public final String taskId;
     public final Type type;
 
-    private TaskInitialEstimate(String taskId, double a1, double a2, double b1, double b2, Type type,
+    private TaskInitialEstimate(String id, double a1, double a2, double b1, double b2, Type type,
                                 AbstractRealDistribution distribution, String description)
     {
-        this.taskId = taskId;
+        super(id);
         this.a1 = a1;
         this.a2 = a2;
         this.b1 = b1;
@@ -63,7 +63,7 @@ public class TaskInitialEstimate
 
         //todo
         //six sigma rule
-//        return new TaskInitialEstimate(taskId, mean - 3 * deviation, mean, mean, mean + 3 * deviation, Type.NORMAL, new NormalDistribution(mean, deviation));
+//        return new TaskInitialEstimate(id, mean - 3 * deviation, mean, mean, mean + 3 * deviation, Type.NORMAL, new NormalDistribution(mean, deviation));
         return new TaskInitialEstimate(taskId, mean - 4 * deviation, mean, mean, mean + 4 * deviation, Type.NORMAL, new NormalDistribution(mean, deviation),
                 String.format("Normal(%f, %f)", mean, deviation));
     }

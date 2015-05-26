@@ -17,7 +17,7 @@ public class MixedRealDistribution extends AbstractRealDistribution
 
     public MixedRealDistribution(Collection<AbstractRealDistribution> components, double minBound, double maxBound)
     {
-        super(new StubRandomGenerator());
+        super(new DefaultRandomGenerator());
         this.components = components;
         this.minBound = minBound;
         this.maxBound = maxBound;
@@ -66,13 +66,13 @@ public class MixedRealDistribution extends AbstractRealDistribution
     @Override
     public double getSupportLowerBound()
     {
-        throw new IllegalStateException("Not implemented");
+        return components.stream().mapToDouble(AbstractRealDistribution::getSupportLowerBound).min().orElse(Double.NEGATIVE_INFINITY);
     }
 
     @Override
     public double getSupportUpperBound()
     {
-        throw new IllegalStateException("Not implemented");
+        return components.stream().mapToDouble(AbstractRealDistribution::getSupportUpperBound).max().orElse(Double.POSITIVE_INFINITY);
     }
 
     @Override
@@ -90,6 +90,7 @@ public class MixedRealDistribution extends AbstractRealDistribution
     @Override
     public boolean isSupportConnected()
     {
-        throw new IllegalStateException("Not implemented");
+        //todo
+        return false;
     }
 }

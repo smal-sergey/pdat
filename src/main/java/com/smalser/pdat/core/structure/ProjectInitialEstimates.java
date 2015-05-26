@@ -19,7 +19,7 @@ public class ProjectInitialEstimates
             SortedSet<TaskInitialEstimate> userTasks = userEstimate.getAllTasks();
             for (TaskInitialEstimate userTask : userTasks)
             {
-                String taskId = userTask.taskId;
+                String taskId = userTask.id;
                 if (!taskToEstimate.containsKey(taskId))
                 {
                     taskToEstimate.put(taskId, new HashSet<>());

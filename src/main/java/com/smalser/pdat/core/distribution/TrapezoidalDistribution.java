@@ -14,7 +14,7 @@ public class TrapezoidalDistribution extends AbstractRealDistribution
 
     public TrapezoidalDistribution(double a, double b, double c, double d)
     {
-        super(new StubRandomGenerator());
+        super(new DefaultRandomGenerator());
         this.a = a;
         this.b = b;
         this.c = c;
@@ -101,30 +101,30 @@ public class TrapezoidalDistribution extends AbstractRealDistribution
     @Override
     public double getSupportLowerBound()
     {
-        throw new IllegalStateException("Not implemented");
+        return a;
     }
 
     @Override
     public double getSupportUpperBound()
     {
-        throw new IllegalStateException("Not implemented");
+        return d;
     }
 
     @Override
     public boolean isSupportLowerBoundInclusive()
     {
-        throw new IllegalStateException("Not implemented");
+        return true;
     }
 
     @Override
     public boolean isSupportUpperBoundInclusive()
     {
-        throw new IllegalStateException("Not implemented");
+        return true;
     }
 
     @Override
     public boolean isSupportConnected()
     {
-        throw new IllegalStateException("Not implemented");
+        return true;
     }
 }

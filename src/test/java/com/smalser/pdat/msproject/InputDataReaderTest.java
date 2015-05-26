@@ -49,7 +49,7 @@ public class InputDataReaderTest
         assertThat(tasks, hasSize(1));
 
         ProjectTask task = tasks.stream().findFirst().get();
-        assertThat(task.taskId, closeTo(taskId, 0.01));
+        assertThat(Double.valueOf(task.id), closeTo(taskId, 0.01));
         assertThat(task.duration, closeTo(3, 0.01));
         assertThat(task.duration1, closeTo(1, 0.01));
         assertThat(task.duration2, closeTo(2, 0.01));

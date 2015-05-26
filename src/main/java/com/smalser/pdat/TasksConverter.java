@@ -29,30 +29,30 @@ public class TasksConverter
 
     public Set<Task> convertToTasks(Collection<? extends ProjectTask> projectTasks, Function<String, Double> idToCost)
     {
-        Map<String, Task> idToTask = new HashMap<>();
         Map<String, List<ProjectTask>> expertIdToTasks = projectTasks.stream().collect(Collectors.groupingBy(t -> t.expertId));
         List<ProjectTask> uniqueProjectTasks = expertIdToTasks.values().stream().findFirst().get();
+        Map<String, Collection<String>> depends = uniqueProjectTasks.stream().collect(Collectors.toMap(t -> t.id, ProjectTask::getDependencies));
 
-        for (ProjectTask projectTask : uniqueProjectTasks)
+        return convertToTasks(uniqueProjectTasks, depends, idToCost);
+    }
+
+    public Set<Task> convertToTasks(Collection<? extends AbstractTask> tasks, Map<String, Collection<String>> depends,
+                                    Function<String, Double> idToCost)
+    {
+        Map<String, Task> idToTask = new HashMap<>();
+
+        for (AbstractTask task : tasks)
         {
-            String taskId = projectTask.taskId + "";
+            String taskId = task.id;
             idToTask.put(taskId, new Task(taskId, new BigDecimal(idToCost.apply(taskId))));
         }
 
-        for (ProjectTask projectTask : uniqueProjectTasks)
+        for (AbstractTask estimatedTask : tasks)
         {
-            Task task = idToTask.get(projectTask.taskId + "");
+            Task task = idToTask.get(estimatedTask.id);
 
             //todo filtering summary tasks
-            projectTask.dependencies.stream().filter(dep -> idToTask.containsKey(dep + "")).forEach(depId -> task.dependencies.add(idToTask.get(depId + "")));
-//            projectTask.dependencies.forEach(depId -> task.dependencies.add(idToTask.get(depId + "")));
-
-//            System.out.print(task.id + ": ");
-//            for (Task dep : task.dependencies)
-//            {
-//                System.out.print(dep.id + ", ");
-//            }
-//            System.out.print("\n");
+            depends.get(estimatedTask.id).stream().filter(idToTask::containsKey).forEach(depId -> task.dependencies.add(idToTask.get(depId)));
         }
 
         return Sets.newHashSet(idToTask.values());

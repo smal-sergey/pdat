@@ -6,7 +6,7 @@ import java.util.TreeSet;
 public class UserInitialEstimate
 {
     final String id;
-    private final TreeSet<TaskInitialEstimate> tasks = new TreeSet<>((o1, o2) -> o1.taskId.compareTo(o2.taskId));
+    private final TreeSet<TaskInitialEstimate> tasks = new TreeSet<>((o1, o2) -> o1.id.compareTo(o2.id));
 
     public UserInitialEstimate(String id)
     {

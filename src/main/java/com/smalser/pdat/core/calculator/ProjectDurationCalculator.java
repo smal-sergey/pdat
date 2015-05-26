@@ -31,10 +31,10 @@ public class ProjectDurationCalculator
         this.initialData = initialData;
     }
 
-    public Map<String, Result> calculateEachTask(double gamma)
+    public Map<String, EstimatedTask> calculateEachTask(double gamma)
     {
         Map<String, Set<TaskInitialEstimate>> taskToEstimates = initialData.getTaskEstimates();
-        Map<String, Result> taskToDuration = new HashMap<>();
+        Map<String, EstimatedTask> taskToDuration = new HashMap<>();
 
         for (String taskId : taskToEstimates.keySet())
         {
@@ -55,7 +55,7 @@ public class ProjectDurationCalculator
         return taskToDuration;
     }
 
-    public AggregatedResult aggregate(Collection<? extends Result> tasks, double gamma)
+    public AggregatedResult aggregate(Collection<? extends EstimatedTask> tasks, double gamma)
     {
         double M0 = tasks.stream().mapToDouble(result -> result.distribution.getNumericalMean()).sum();
         double sumVariance = tasks.stream().mapToDouble(result -> result.distribution.getNumericalVariance()).sum();
@@ -68,7 +68,7 @@ public class ProjectDurationCalculator
         return new AggregatedResult(sumDistrib, M0 - 5 * D0, M0 + 5 * D0,  M0 - (latestEstimate - M0), latestEstimate);
     }
 
-    private Result calculateTask(Set<TaskInitialEstimate> estimates, AbstractRealDistribution taskDistribution,
+    private EstimatedTask calculateTask(Set<TaskInitialEstimate> estimates, AbstractRealDistribution taskDistribution,
                                  double gamma)
     {
         TaskConstraints taskConstraints = new TaskConstraints(estimates, gamma, 0.1); //todo adaptive speed constant?
@@ -112,7 +112,8 @@ public class ProjectDurationCalculator
 //        System.out.println("a = " + a + "\nb = " + b + "\nt = " + t);
 //        System.out.println(rightBorder.toString());
 
-        return new Result(leftBorder, rightBorder, t, taskConstraints, taskDistribution);
+        String id = estimates.stream().findFirst().get().id;
+        return new EstimatedTask(id, leftBorder, rightBorder, t, taskConstraints, taskDistribution);
     }
 
     //todo temp correctness check

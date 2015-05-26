@@ -69,11 +69,11 @@ public class ProjectDurationCalculatorTest
 //        initialData.getTaskEstimates().get("task1").stream().forEach(System.out::println);
 
         ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
-        Map<String, Result> taskToDuration = calc.calculateEachTask(gamma);
-        Result result = taskToDuration.values().stream().findFirst().get();
+        Map<String, EstimatedTask> taskToDuration = calc.calculateEachTask(gamma);
+        EstimatedTask estimatedTask = taskToDuration.values().stream().findFirst().get();
 
-        assertThat(result, withIntervalProbability(closeTo(gamma, 0.01)));
-        assertThat(result, hasMinSpread());
+        assertThat(estimatedTask, withIntervalProbability(closeTo(gamma, 0.01)));
+        assertThat(estimatedTask, hasMinSpread());
     }
 
     @Test
@@ -89,7 +89,7 @@ public class ProjectDurationCalculatorTest
         }
 
         ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
-        Map<String, Result> idToEstimate = calc.calculateEachTask(gamma);
+        Map<String, EstimatedTask> idToEstimate = calc.calculateEachTask(gamma);
         AggregatedResult result = calc.aggregate(idToEstimate.values(), gamma);
 
         XlsLogger.dumpResult("results.xlsx", result);
@@ -107,21 +107,21 @@ public class ProjectDurationCalculatorTest
         initialData.addUserEstimates(estimate(3, uniform(taskId, 4, 6)));
 
         ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
-        Map<String, Result> taskToDuration = calc.calculateEachTask(gamma);
-        Result result = taskToDuration.values().stream().findFirst().get();
+        Map<String, EstimatedTask> taskToDuration = calc.calculateEachTask(gamma);
+        EstimatedTask estimatedTask = taskToDuration.values().stream().findFirst().get();
 
-        XlsLogger.dumpResult("results.xlsx", result);
+        XlsLogger.dumpResult("results.xlsx", estimatedTask);
     }
 
 
-    private Matcher<? super Result> hasMinSpread()
+    private Matcher<? super EstimatedTask> hasMinSpread()
     {
-        return new TypeSafeDiagnosingMatcher<Result>()
+        return new TypeSafeDiagnosingMatcher<EstimatedTask>()
         {
-            private Result item;
+            private EstimatedTask item;
 
             @Override
-            protected boolean matchesSafely(Result item, Description mismatchDescription)
+            protected boolean matchesSafely(EstimatedTask item, Description mismatchDescription)
             {
                 this.item = item;
                 Double maxTime = item.taskConstraints.getCalculatedMaxTime();
@@ -153,14 +153,14 @@ public class ProjectDurationCalculatorTest
         };
     }
 
-    private Matcher<? super Result> withIntervalProbability(Matcher<? super Double> gammaMatcher)
+    private Matcher<? super EstimatedTask> withIntervalProbability(Matcher<? super Double> gammaMatcher)
     {
-        return new TypeSafeDiagnosingMatcher<Result>()
+        return new TypeSafeDiagnosingMatcher<EstimatedTask>()
         {
-            private Result item;
+            private EstimatedTask item;
 
             @Override
-            protected boolean matchesSafely(Result item, org.hamcrest.Description mismatchDescription)
+            protected boolean matchesSafely(EstimatedTask item, org.hamcrest.Description mismatchDescription)
             {
                 this.item = item;
                 double probabilityOfInterval = item.getProbabilityOfInterval();

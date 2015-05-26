@@ -118,7 +118,7 @@ public class CpmCalculator
 //        }
 
         maxCost = tasks.stream().map(t -> t.criticalCost).max(BigDecimal::compareTo).get();
-        System.out.println("Critical path length (cost): " + maxCost);
+//        System.out.println("Critical path length (cost): " + maxCost);
         tasks.forEach(t -> t.setLatest(maxCost));
     }
 
