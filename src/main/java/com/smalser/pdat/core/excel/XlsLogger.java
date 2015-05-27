@@ -1,6 +1,5 @@
 package com.smalser.pdat.core.excel;
 
-import com.smalser.pdat.core.structure.AggregatedResult;
 import com.smalser.pdat.core.structure.EstimatedTask;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.charts.*;
@@ -14,12 +13,7 @@ public class XlsLogger
 {
     public static void dumpResult(String fileName, EstimatedTask estimatedTask)
     {
-        dumpToXls2(fileName, estimatedTask::density, estimatedTask.getLeftBound(), estimatedTask.getRightBound(), estimatedTask.getA(), estimatedTask.getB());
-    }
-
-    public static void dumpResult(String fileName, AggregatedResult result)
-    {
-        dumpToXls2(fileName, result.distribution::density, result.leftBound, result.rightBound, result.a, result.b);
+        dumpToXls2(fileName, estimatedTask::density, estimatedTask.leftBound, estimatedTask.rightBound, estimatedTask.a, estimatedTask.b);
     }
 
     public static void dumpToXls(String fileName, Function<Double, Double> density, double min, double max)

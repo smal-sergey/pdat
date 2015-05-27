@@ -2,7 +2,6 @@ package com.smalser.pdat.core.calculator;
 
 import com.smalser.pdat.core.excel.XlsLogger;
 import com.smalser.pdat.core.structure.*;
-import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Test;
@@ -73,7 +72,6 @@ public class ProjectDurationCalculatorTest
         EstimatedTask estimatedTask = taskToDuration.values().stream().findFirst().get();
 
         assertThat(estimatedTask, withIntervalProbability(closeTo(gamma, 0.01)));
-        assertThat(estimatedTask, hasMinSpread());
     }
 
     @Test
@@ -90,7 +88,7 @@ public class ProjectDurationCalculatorTest
 
         ProjectDurationCalculator calc = new ProjectDurationCalculator(initialData);
         Map<String, EstimatedTask> idToEstimate = calc.calculateEachTask(gamma);
-        AggregatedResult result = calc.aggregate(idToEstimate.values(), gamma);
+        EstimatedTask result = calc.aggregate(idToEstimate.values(), gamma);
 
         XlsLogger.dumpResult("results.xlsx", result);
     }
@@ -113,46 +111,6 @@ public class ProjectDurationCalculatorTest
         XlsLogger.dumpResult("results.xlsx", estimatedTask);
     }
 
-
-    private Matcher<? super EstimatedTask> hasMinSpread()
-    {
-        return new TypeSafeDiagnosingMatcher<EstimatedTask>()
-        {
-            private EstimatedTask item;
-
-            @Override
-            protected boolean matchesSafely(EstimatedTask item, Description mismatchDescription)
-            {
-                this.item = item;
-                Double maxTime = item.taskConstraints.getCalculatedMaxTime();
-                Double calculatedSpread = item.getB() - item.getA();
-
-                for (double t = 0.0; t < maxTime; t += 0.1)
-                {
-                    double b = item.rightBorder.value(t);
-                    double a = item.leftBorder.value(t);
-
-                    if (calculatedSpread - (b - a) > 0.1)
-                    {
-                        mismatchDescription.appendText("Found interval shorter then calculated one. t = ").appendValue(t).appendText(", a = ").appendValue(a).appendText(", b = ").appendValue(b).appendText("\n\t (b - a) = ").appendValue(b - a);
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            @Override
-            public void describeTo(Description description)
-            {
-                XlsLogger.dumpResult("test_fail.xlsx", item);
-                double a = item.getA();
-                double b = item.getB();
-                description.appendText("Result with interval [").appendValue(a).appendText(", ").appendValue(b).appendText("] on t = ").appendValue(item.optimalTime).appendText(" is optimal.").appendText("Max time = ").appendValue(item.taskConstraints.getCalculatedMaxTime()).appendText("\n\t (b - a) = ").appendValue(b - a);
-            }
-        };
-    }
-
     private Matcher<? super EstimatedTask> withIntervalProbability(Matcher<? super Double> gammaMatcher)
     {
         return new TypeSafeDiagnosingMatcher<EstimatedTask>()
@@ -163,7 +121,7 @@ public class ProjectDurationCalculatorTest
             protected boolean matchesSafely(EstimatedTask item, org.hamcrest.Description mismatchDescription)
             {
                 this.item = item;
-                double probabilityOfInterval = item.getProbabilityOfInterval();
+                double probabilityOfInterval = item.distribution.probability(item.a, item.b);
                 mismatchDescription.appendText("Result with interval probability ").appendValue(probabilityOfInterval);
                 return gammaMatcher.matches(probabilityOfInterval);
             }

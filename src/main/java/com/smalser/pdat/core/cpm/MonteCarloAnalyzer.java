@@ -16,8 +16,21 @@ import java.util.stream.Collectors;
 
 public class MonteCarloAnalyzer
 {
-    public EmpiricalDistribution analyze(Collection<EstimatedTask> estimatedTasks,
-                                         Map<String, Collection<String>> depends, int iterations)
+    private static final int DEFAULT_ITERATIONS_NUMBER = 10000;
+
+    final int iterations;
+
+    public MonteCarloAnalyzer()
+    {
+        this.iterations = DEFAULT_ITERATIONS_NUMBER;
+    }
+
+    public MonteCarloAnalyzer(int iterations)
+    {
+        this.iterations = iterations;
+    }
+
+    public EmpiricalDistribution analyze(Collection<EstimatedTask> estimatedTasks, Map<String, Collection<String>> depends)
     {
         double[] durations = new double[iterations];
 
@@ -25,7 +38,7 @@ public class MonteCarloAnalyzer
         {
             durations[i] = simulateProject(estimatedTasks, depends);
         }
-        EmpiricalDistribution dist = new EmpiricalDistribution(40);
+        EmpiricalDistribution dist = new EmpiricalDistribution(iterations / 10);
         dist.load(durations);
         return dist;
     }

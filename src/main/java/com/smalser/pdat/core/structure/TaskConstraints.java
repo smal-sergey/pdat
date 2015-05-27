@@ -23,6 +23,15 @@ public class TaskConstraints
         alpha = leftBound;
     }
 
+    public TaskConstraints(double leftBound, double rightBound, double gamma, double leftBorderSpeed)
+    {
+        this.gamma = gamma;
+        this.leftBorderSpeed = leftBorderSpeed;
+        this.leftBound = leftBound;
+        this.rightBound = rightBound;
+        alpha = leftBound;
+    }
+
     private double findLeftBound(Set<TaskInitialEstimate> estimates)
     {
         return estimates.stream().map(TaskInitialEstimate::min).min(Double::compareTo).get();

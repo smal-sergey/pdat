@@ -2,9 +2,12 @@ package com.smalser.pdat.core.calculator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.smalser.pdat.core.excel.XlsLogger;
 import com.smalser.pdat.core.distribution.MixedRealDistribution;
-import com.smalser.pdat.core.structure.*;
+import com.smalser.pdat.core.excel.XlsLogger;
+import com.smalser.pdat.core.structure.EstimatedTask;
+import com.smalser.pdat.core.structure.ProjectInitialEstimates;
+import com.smalser.pdat.core.structure.TaskConstraints;
+import com.smalser.pdat.core.structure.TaskInitialEstimate;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.BrentSolver;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
@@ -43,7 +46,7 @@ public class ProjectDurationCalculator
 
             try
             {
-                taskToDuration.put(taskId, calculateTask(estimates, taskDistribution, gamma));
+                taskToDuration.put(taskId, calculateTask(taskId, findLeftBound(estimates), findRightBound(estimates), taskDistribution, gamma));
 
             } catch (Exception e)
             {
@@ -55,7 +58,7 @@ public class ProjectDurationCalculator
         return taskToDuration;
     }
 
-    public AggregatedResult aggregate(Collection<? extends EstimatedTask> tasks, double gamma)
+    public EstimatedTask aggregate(Collection<? extends EstimatedTask> tasks, double gamma)
     {
         double M0 = tasks.stream().mapToDouble(result -> result.distribution.getNumericalMean()).sum();
         double sumVariance = tasks.stream().mapToDouble(result -> result.distribution.getNumericalVariance()).sum();
@@ -65,13 +68,13 @@ public class ProjectDurationCalculator
         BrentSolver solver = new BrentSolver(1.0e-4);
         double latestEstimate = solver.solve(Integer.MAX_VALUE, x -> sumDistrib.probability(M0, x) - gamma / 2, M0, M0 + 4 * D0);
 
-        return new AggregatedResult(sumDistrib, M0 - 5 * D0, M0 + 5 * D0,  M0 - (latestEstimate - M0), latestEstimate);
+        return new EstimatedTask("aggregatedResult", M0 - 5 * D0, M0 + 5 * D0, M0 - (latestEstimate - M0), latestEstimate, sumDistrib);
     }
 
-    private EstimatedTask calculateTask(Set<TaskInitialEstimate> estimates, AbstractRealDistribution taskDistribution,
-                                 double gamma)
+    public EstimatedTask calculateTask(String id, double minValue, double maxValue,
+                                       AbstractRealDistribution taskDistribution, double gamma)
     {
-        TaskConstraints taskConstraints = new TaskConstraints(estimates, gamma, 0.1); //todo adaptive speed constant?
+        TaskConstraints taskConstraints = new TaskConstraints(minValue, maxValue, gamma, 0.1); //todo adaptive speed constant?
 
         double beta = findBeta(taskDistribution, taskConstraints);
 //        System.out.println("Beta found! " + beta);
@@ -99,21 +102,18 @@ public class ProjectDurationCalculator
 //        System.out.println("Right border b(t) found!");
 
         //d(t) = b(t) - a(t)   possible duration interval, dates from and to. We need to minimize that interval
-        UnivariateObjectiveFunction durationInterval = new UnivariateObjectiveFunction((
-                t) -> rightBorder.value(t) - leftBorder.value(t));
+        UnivariateObjectiveFunction durationInterval = new UnivariateObjectiveFunction((t) -> rightBorder.value(t) - leftBorder.value(t));
         SearchInterval searchInterval = new SearchInterval(0, taskConstraints.getCalculatedMaxTime()); //todo think about initial t value
         BrentOptimizer optimizer = new BrentOptimizer(1.0e-6, 1.0e-6);
         UnivariatePointValuePair optimum = optimizer.optimize(searchInterval, durationInterval, GoalType.MINIMIZE, new MaxEval(100));
         double t = optimum.getPoint();
 
-//        double a = leftBorder.value(t);
-//        double b = rightBorder.value(t);
-//        System.out.println("alpha = " + taskConstraints.alpha);
-//        System.out.println("a = " + a + "\nb = " + b + "\nt = " + t);
-//        System.out.println(rightBorder.toString());
+        double leftBound = taskConstraints.leftBound;
+        double rightBound = taskConstraints.rightBound;
+        double a = leftBorder.value(t);
+        double b = rightBorder.value(t);
 
-        String id = estimates.stream().findFirst().get().id;
-        return new EstimatedTask(id, leftBorder, rightBorder, t, taskConstraints, taskDistribution);
+        return new EstimatedTask(id, leftBound, rightBound, a, b, taskDistribution);
     }
 
     //todo temp correctness check
@@ -134,6 +134,16 @@ public class ProjectDurationCalculator
     {
         BetaFinder betaFinder = new BetaFinder(taskDistribution, taskConstraints);
         return betaFinder.findMinBeta();
+    }
+
+    private double findLeftBound(Set<TaskInitialEstimate> estimates)
+    {
+        return estimates.stream().map(TaskInitialEstimate::min).min(Double::compareTo).get();
+    }
+
+    private double findRightBound(Set<TaskInitialEstimate> estimates)
+    {
+        return estimates.stream().map(TaskInitialEstimate::max).max(Double::compareTo).get();
     }
 
     private MixedRealDistribution createDistribution(Set<TaskInitialEstimate> estimates)
