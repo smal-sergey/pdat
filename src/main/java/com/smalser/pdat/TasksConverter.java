@@ -21,7 +21,7 @@ public class TasksConverter
         for (String expertId : expertIdToTasks.keySet())
         {
             UserInitialEstimate uie = new UserInitialEstimate(expertId);
-            expertIdToTasks.get(expertId).stream().forEach(t -> uie.addEstimate(t.createEstimate()));
+            expertIdToTasks.get(expertId).stream().filter(t -> !t.isSummary).forEach(t -> uie.addEstimate(t.createEstimate()));
             pie.addUserEstimates(uie);
         }
         return pie;

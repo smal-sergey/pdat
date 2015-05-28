@@ -35,31 +35,31 @@ public class TaskInitialEstimate extends AbstractTask
 
     public static TaskInitialEstimate uniform(String taskId, double a, double b)
     {
-        checkArgument(a < b, "a < b violated");
+        checkArgument(a < b, "a < b violated, " + taskId);
         return new TaskInitialEstimate(taskId, a, a, b, b, Type.UNIFORM, new UniformRealDistribution(a, b),
                 String.format("Uniform(%f, %f)", a, b));
     }
 
     public static TaskInitialEstimate triangular(String taskId, double a, double b, double c)
     {
-        checkArgument(a < b, "a < b violated");
-        checkArgument(b < c, "b < c violated");
+        checkArgument(a < b, "a < b violated, " + taskId);
+        checkArgument(b < c, "b < c violated, " + taskId);
         return new TaskInitialEstimate(taskId, a, b, b, c, Type.TRIANGULAR, new TriangularDistribution(a, b, c),
                 String.format("Triangular(%f, %f, %f)", a, b, c));
     }
 
     public static TaskInitialEstimate trapezoidal(String taskId, double a, double b, double c, double d)
     {
-        checkArgument(a <= b, "a <= b violated");
-        checkArgument(b < c, "b < c violated");
-        checkArgument(c <= d, "c <= d violated");
+        checkArgument(a <= b, "a <= b violated, " + taskId);
+        checkArgument(b < c, "b < c violated, " + taskId);
+        checkArgument(c <= d, "c <= d violated, " + taskId);
         return new TaskInitialEstimate(taskId, a, b, c, d, Type.TRAPEZOIDAL, new TrapezoidalDistribution(a, b, c, d),
                 String.format("Trapezoidal(%f, %f, %f, %f)", a, b, c, d));
     }
 
     public static TaskInitialEstimate normal(String taskId, double mean, double deviation)
     {
-        checkArgument(deviation > 0, "deviation > 0 violated");
+        checkArgument(deviation > 0, "deviation > 0 violated, " + taskId);
 
         //todo
         //six sigma rule

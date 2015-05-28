@@ -12,6 +12,7 @@ public abstract class MetaDataContainer
     public static final String COL_ID = "ID";
     public static final String COL_NAME = "Task_Name";
     public static final String COL_SUMMARY = "Summary";
+    public static final String COL_MILESTONE = "Milestone";
     public static final String COL_DURATION = "Duration";
     public static final String COL_DURATION_1 = "Duration1";    //pessimistic
     public static final String COL_DURATION_2 = "Duration2";    //expected
@@ -20,7 +21,7 @@ public abstract class MetaDataContainer
     public static final String COL_PREDECESSORS = "Predecessors";
     public static final String COL_DISTRIBUTION = "Distribution";
 
-    protected static final Set<String> HEADERS = Sets.newHashSet(COL_ID, COL_NAME, COL_SUMMARY, COL_DURATION,
+    protected static final Set<String> HEADERS = Sets.newHashSet(COL_ID, COL_NAME, COL_SUMMARY, COL_MILESTONE, COL_DURATION,
             COL_DURATION_1, COL_DURATION_2, COL_DURATION_3, COL_DURATION_4, COL_PREDECESSORS, COL_DISTRIBUTION);
 
     protected Map<Integer, String> readHeaders(XlsEditor xls){

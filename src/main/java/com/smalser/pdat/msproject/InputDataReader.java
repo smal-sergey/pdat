@@ -43,7 +43,7 @@ public class InputDataReader extends MetaDataContainer
             String taskName = "";
             String dependencies = "";
             String distribution = "";
-            boolean isSummary = true;
+            boolean isSummary = false;
             double duration = 0;
             double duration1 = 0;
             double duration2 = 0;
@@ -68,8 +68,9 @@ public class InputDataReader extends MetaDataContainer
                         case COL_DISTRIBUTION:
                             distribution = value;
                             break;
+                        case COL_MILESTONE:
                         case COL_SUMMARY:
-                            isSummary = "Yes".equals(value);
+                            isSummary = isSummary || "Yes".equals(value);
                             break;
                         case COL_DURATION:
                             duration = parseDuration(value);
