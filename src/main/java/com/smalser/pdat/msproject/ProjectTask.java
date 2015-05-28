@@ -16,19 +16,24 @@ public class ProjectTask extends AbstractTask
 
     public final String expertId;
     public final String taskName;
+    public final String distribution;
     public final Set<Double> dependencies;
     public final boolean isSummary;
     public final double duration;
     public final double duration1;
     public final double duration2;
     public final double duration3;
+    public final double duration4;
 
-    public ProjectTask(String expertId, double taskId, String taskName, String dependencies, boolean isSummary,
-                       double duration, double duration1, double duration2, double duration3)
+    public ProjectTask(String expertId, double taskId, String taskName, String dependencies, String distribution,
+                       boolean isSummary, double duration, double duration1, double duration2, double duration3,
+                       double duration4)
     {
         super(taskId + "");
         this.expertId = expertId;
         this.taskName = taskName;
+        this.distribution = distribution;
+        this.duration4 = duration4;
         this.dependencies = parse(dependencies);
         this.isSummary = isSummary;
         this.duration = duration;
@@ -62,6 +67,7 @@ public class ProjectTask extends AbstractTask
         double a = duration1;
         double b = duration2;
         double c = duration3;
+        double d = duration4;
 
         if (duration1 == 0.0 && duration2 == 0.0 && duration3 == 0.0)
         {
@@ -69,8 +75,27 @@ public class ProjectTask extends AbstractTask
             b = duration;
             c = duration * 1.2;
         }
-//        return TaskInitialEstimate.triangular(taskName, a, b, c);
-        return TaskInitialEstimate.triangular(id, a, b, c);
+
+        TaskInitialEstimate estimate;
+        switch (distribution)
+        {
+            case "U":
+                estimate = TaskInitialEstimate.uniform(id, a, b);
+                break;
+            case "N":
+                estimate = TaskInitialEstimate.normal(id, b, (b - a) / 3);
+                break;
+            case "T":
+                estimate = TaskInitialEstimate.triangular(id, a, b, c);
+                break;
+            case "Tr":
+                estimate = TaskInitialEstimate.trapezoidal(id, a, b, c, d);
+                break;
+            default:
+                estimate = TaskInitialEstimate.triangular(id, a, b, c);
+        }
+
+        return estimate;
     }
 
     public Collection<String> getDependencies()

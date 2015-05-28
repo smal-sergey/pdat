@@ -42,11 +42,13 @@ public class InputDataReader extends MetaDataContainer
             double taskId = 0;
             String taskName = "";
             String dependencies = "";
+            String distribution = "";
             boolean isSummary = true;
             double duration = 0;
             double duration1 = 0;
             double duration2 = 0;
             double duration3 = 0;
+            double duration4 = 0;
 
             for (int j = 0; j < xls.getNumberOfColumns(); j++)
             {
@@ -63,20 +65,26 @@ public class InputDataReader extends MetaDataContainer
                         case COL_NAME:
                             taskName = value;
                             break;
+                        case COL_DISTRIBUTION:
+                            distribution = value;
+                            break;
                         case COL_SUMMARY:
                             isSummary = "Yes".equals(value);
                             break;
                         case COL_DURATION:
-                            duration = Double.parseDouble(value.split(" ")[0].replace(",", "."));
+                            duration = parseDuration(value);
                             break;
                         case COL_DURATION_1:
-                            duration1 = Double.parseDouble(value.split(" ")[0].replace(",", "."));
+                            duration1 = parseDuration(value);
                             break;
                         case COL_DURATION_2:
-                            duration2 = Double.parseDouble(value.split(" ")[0].replace(",", "."));
+                            duration2 = parseDuration(value);
                             break;
                         case COL_DURATION_3:
-                            duration3 = Double.parseDouble(value.split(" ")[0].replace(",", "."));
+                            duration3 = parseDuration(value);
+                            break;
+                        case COL_DURATION_4:
+                            duration4 = parseDuration(value);
                             break;
                         case COL_PREDECESSORS:
                             dependencies = value;
@@ -88,8 +96,13 @@ public class InputDataReader extends MetaDataContainer
             }
 
             //todo create builder
-            tasks.add(new ProjectTask(userId, taskId, taskName, dependencies, isSummary, duration, duration1, duration2, duration3));
+            tasks.add(new ProjectTask(userId, taskId, taskName, dependencies, distribution, isSummary, duration, duration1, duration2, duration3, duration4));
         }
         return tasks;
+    }
+
+    private double parseDuration(String value)
+    {
+        return Double.parseDouble(value.split(" ")[0].replace(",", "."));
     }
 }
